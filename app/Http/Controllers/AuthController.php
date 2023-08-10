@@ -15,21 +15,35 @@ class AuthController extends Controller
 {
     public function create(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|unique:users,phone',
+            'password' => 'required|string|min:8',
+        ]);
 
-//       TODO:   validator user unique email unique:user
+        $existingUser = User::where('email', $request->input('email'))
+            ->orWhere('phone', $request->input('phone'))
+            ->first();
+
+        if ($existingUser) {
+            return response()->json([
+                'message' => 'This user has already been created'
+            ], 400);
+        }
+
         $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password)]
-        );
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'password' => Hash::make($request->input('password')),
+        ]);
 
-        # And make sure to use the plainTextToken property
-        # Since this will return us the plain text token and then store the hashed value in the database
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->roles()->attach(3);
 
         return response()->json([
+            "message" => "This user has been created",
             "user" => $user,
             "token" => $token
         ]);
@@ -37,16 +51,16 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $credentials = $request->only('phone', 'password');
 
-        if (!Auth::attempt($request->only('phone', 'password')))
+        if (!Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Invalid login details',
-                401
-            ]);
+                'message' => 'Invalid login details'
+            ], 401);
+        }
 
-        $user = User::where('phone', $request->phone)->with('roles')->get()->firstOrFail();
+        $user = User::where('phone', $credentials['phone'])->with('roles')->firstOrFail();
 
-        # Delete the existing tokens from the database and create a new one
         auth()->user()->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -62,7 +76,7 @@ class AuthController extends Controller
         $users = User::all();
 
         return response()->json([
-            'user' => $users
+            'users' => $users
         ]);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TrackerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +23,8 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'create']);
     Route::post('login', [AuthController::class, 'login']);
     Route::get('user/info', [AuthController::class, 'info'])->middleware('auth:sanctum');
+
 });
+
+Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
+
