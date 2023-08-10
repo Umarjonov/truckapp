@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,6 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -26,7 +28,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'email',
+        'phone',
+        'password',
     ];
 
     /**
@@ -48,6 +53,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'string',
     ];
 
     /**
@@ -58,4 +64,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
 }
