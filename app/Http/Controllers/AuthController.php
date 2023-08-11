@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 //use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
@@ -15,22 +16,20 @@ class AuthController extends Controller
 {
     public function create(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string|unique:users,phone',
-            'password' => 'required|string|min:8',
-        ]);
-
-        $existingUser = User::where('email', $request->input('email'))
-            ->orWhere('phone', $request->input('phone'))
-            ->first();
-
-        if ($existingUser) {
+        try {
+            $request->validate([
+                'name' => 'required|string',
+                'email' => 'required|email|unique:users,email',
+                'phone' => 'required|string|unique:users,phone',
+                'password' => 'required|string|min:8',
+            ]);
+        } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'This user has already been created'
-            ], 400);
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         }
+
 
         $user = User::create([
             'name' => $request->input('name'),
@@ -43,10 +42,11 @@ class AuthController extends Controller
         $user->roles()->attach(3);
 
         return response()->json([
-            "message" => "This user has been created",
+            "message" => "The user has been created",
             "user" => $user,
             "token" => $token
         ]);
+
     }
 
     public function login(Request $request)
