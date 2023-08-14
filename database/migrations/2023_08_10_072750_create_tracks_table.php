@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -16,10 +15,9 @@ return new class extends Migration
         Schema::create('tracks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->decimal('latitude', 10, 7); // Adjust precision and scale as needed
-            $table->decimal('longitude', 10, 7); // Adjust precision and scale as needed
-            $table->string('type');
-            $table->timestamp('timestamp'); // Use timestamp column for date and time
+            $table->decimal('latitude', 10, 7)->nullable()->default(null); // Adjust precision and scale as needed
+            $table->decimal('longitude', 10, 7)->nullable()->default(null); // Adjust precision and scale as needed
+            $table->boolean('type')->default(false);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
