@@ -29,7 +29,7 @@ class AuthController extends Controller
 
         $data = $request->only('name', "email");
         $data['password'] = Hash::make($request->input('password'));
-        $data['phone'] =  preg_replace('/[^0-9]/', '', $request->get('phone'));
+        $data['phone'] = preg_replace('/[^0-9]/', '', $request->get('phone'));
         $user = User::create($data);
         $this->createTeam($user);
 
@@ -37,8 +37,8 @@ class AuthController extends Controller
         $user['token'] = $user->createToken($device)->plainTextToken;
         $user->roles()->attach(3);
         $message = [
-            "uz" => "The user has been created",
-            "ru" => "The user has been created",
+            "uz" => "Foydalanuvchi yaratildi",
+            "ru" => "Пользователь был создан",
             "en" => "The user has been created",
         ];
         return $this->success_response($user, $message);
@@ -62,12 +62,11 @@ class AuthController extends Controller
 
         $user['token'] = $token;
         $result = $user;
-        $message =
-            [
-                "uz" => "The user has login",
-                "ru" => "The user has login",
-                "en" => "The user has login",
-            ];
+        $message = [
+            "uz" => "Foydalanuvchi tizimga kirdi",
+            "ru" => "Пользователь вошёл в систему",
+            "en" => "The user has logged in",
+        ];
         return $this->success_response($result, $message);
     }
 
