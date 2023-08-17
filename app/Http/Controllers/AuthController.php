@@ -35,7 +35,9 @@ class AuthController extends Controller
 
         $device = substr($request->userAgent() ?? '', 0, 255);
         $user['token'] = $user->createToken($device)->plainTextToken;
+
         $user->roles()->attach(3);
+
         $message = [
             "uz" => "Foydalanuvchi yaratildi",
             "ru" => "Пользователь был создан",
@@ -59,6 +61,7 @@ class AuthController extends Controller
         auth()->user()->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
+
 
         $user['token'] = $token;
         $result = $user;
@@ -87,4 +90,5 @@ class AuthController extends Controller
             'personal_team' => true,
         ]));
     }
+
 }
