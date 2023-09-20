@@ -44,7 +44,6 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('phone', 'password');
-
         if (!Auth::attempt($credentials)) {
             $message = [
                 "uz" => "Noto'g'ri kirish ma'lumotlari",
