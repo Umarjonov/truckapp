@@ -133,7 +133,7 @@ class AuthController extends Controller
         if ($recentCodeSent) {
             // Handle the case where the code was sent too recently
             return $this->error_response2([
-                "uz" => "Urunish ko'payib ketti",
+                "uz" => "Kodni so'nggi muddatda jo'natish mumkin emas",
                 "ru" => "Отправка кода слишком часто недопустима",
                 "en" => "Sending the code too frequently is not allowed",
             ]);
@@ -182,8 +182,7 @@ class AuthController extends Controller
     {
         $validatedData = $request->validate([
             'phone' => 'required|string',
-            'password' => 'required|string|min:8|same:password_confirm',
-            'password_confirm' => 'required',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $phone = preg_replace('/[^0-9]/', '', $validatedData['phone']);
@@ -207,7 +206,6 @@ class AuthController extends Controller
 
 
 //    end forgot password
-
     protected function createTeam(User $user): void
     {
         $user->ownedTeams()->save(Team::forceCreate([
