@@ -11,4 +11,5 @@ class AdminController extends Controller
         // Your logic for the admin dashboard
         // Only users with 'admin' role can access this route
     }
+
 }

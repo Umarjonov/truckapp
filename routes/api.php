@@ -28,3 +28,8 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
 
+Route::prefix('password')->group(function () {
+    Route::post('/forgot', [AuthController::class, 'forgotPassword'])->name('password.forgot');
+    Route::post('/verify', [AuthController::class, 'verifyCode'])->name('password.verify');
+    Route::post('/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+});

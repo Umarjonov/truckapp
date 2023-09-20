@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use App\Models\User;
 
 class Controller extends BaseController
 {
@@ -27,6 +28,7 @@ class Controller extends BaseController
         }
         return response()->json($error, 400);
     }
+
     public function error_response2($data = null)
     {
         $error = [
@@ -54,5 +56,4 @@ class Controller extends BaseController
 
     }
 
-    public $secret = 1234;
 }
