@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Team;
 use App\Models\User;
+use App\Models\UserVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Hash;
+
 
 class AuthController extends Controller
 {
@@ -80,130 +86,100 @@ class AuthController extends Controller
         ]);
     }
 
-    // start forgot password
-
-// 1. Validate Phone Number and Send SMS Code
     public function forgotPassword(Request $request)
     {
-        $validatedData = $request->validate([
-            'phone' => 'required|string',
+        $validator = Validator::make($request->all(),[
+            'phone'=>"required|exists:users,phone"
         ]);
-
-        $phone = preg_replace('/[^0-9]/', '', $validatedData['phone']);
-        $user = User::where('phone', $phone)->first();
-
-        if (!$user) {
+        if($validator->fails()){
             return $this->error_response2([
-                "uz" => "Foydalanuvchi topilmadi",
-                "ru" => "Пользователь не найден",
-                "en" => "User not found",
+                "uz" => $validator->errors()->first(),
+                "ru" => $validator->errors()->first(),
+                "en" => $validator->errors()->first(),
             ]);
         }
-
-        $verificationCode = rand(1000, 9999);
-        $hashedVerificationCode = Hash::make($verificationCode); // Hash the verification code
-        $user->verification_code = $hashedVerificationCode; // Save the hashed code
-        $user->save();
-
-        $this->sendVerificationCode($user->phone, $verificationCode);
-
-        // Return a success response indicating that the code has been sent
-        return $this->success_response("Verification code sent successfully");
-    }
-
-// Helper method to send SMS
-    protected function sendVerificationCode($phone, $code)
-    {
-        // Find the user by phone number
-        $user = User::where('phone', $phone)->first();
-
-        if (!$user) {
-            // Handle the case where the user is not found
-            return $this->error_response2([
-                "uz" => "Foydalanuvchi topilmadi",
-                "ru" => "Пользователь не найден",
-                "en" => "User not found",
-            ]);
-        }
-
-        // Check if a verification code was sent recently (e.g., within the last 2 minutes)
-        $cooldownMinutes = 2;
-        $recentCodeSent = $user->verification_code_sent_at && now()->diffInMinutes($user->verification_code_sent_at) < $cooldownMinutes;
-
-        if ($recentCodeSent) {
-            // Handle the case where the code was sent too recently
-            return $this->error_response2([
-                "uz" => "Kodni so'nggi muddatda jo'natish mumkin emas",
-                "ru" => "Отправка кода слишком часто недопустима",
-                "en" => "Sending the code too frequently is not allowed",
-            ]);
-        }
-
-        // Send the verification code
-        $twilioClient = new Client(config('services.twilio.sid'), config('services.twilio.token'));
-
-        $twilioClient->messages->create(
-            $phone,
+        $code = random_int(1000,9999);
+        $verification = UserVerification::updateOrCreate(
+            ['phone'=>$request->phone],
             [
-                'from' => config('services.twilio.from'),
-                'body' => "Your verification code is: $code",
+                'code' => Crypt::encrypt($code),
+                'app_id' => null,
+                'code_attempts' => 5
             ]
         );
+        $this->sendVerificationCode($verification->phone, $code);
 
-        // Update the timestamp for the last sent code
-        $user->verification_code_sent_at = now();
-        $user->save();
+        return $this->success_response([],[
+            "uz" => "Tekshirish kodi muvaffaqiyatli yuborildi.",
+            "ru" => "Код подтверждения успешно отправлен.",
+            "en" => "Verification code sent successfully.",
+        ]);
     }
 
 
-// 2. Check Code
+    protected function sendVerificationCode($phone, $code)
+    {
+        $result = Http::withBasicAuth('admin','admin')
+            ->post("https://quramiz.uz/api/sendSMS",[
+                'phone'=>$phone,
+                'content'=>"Your verification code is: $code"
+            ])->json();
+        return $result;
+    }
+
+
     public function verifyCode(Request $request)
     {
-        $validatedData = $request->validate([
-            'phone' => 'required|string',
+        $validator = Validator::make($request->all(),[
+            'phone'=>"required|exists:user_verifications,phone",
             'code' => 'required|numeric',
         ]);
-
-        $phone = preg_replace('/[^0-9]/', '', $validatedData['phone']);
-        $user = User::where('phone', $phone)->first();
-
-        if (!$user || !Hash::check($validatedData['code'], $user->verification_code)) {
-            return $this->error_response2([
-                "uz" => "Noto'g'ri verifikatsiya kod",
-                "ru" => "Неверный код верификации",
-                "en" => "Invalid verification code",
-            ]);
+        if($validator->fails()){
+            return $this->error_response([],$validator->errors()->first());
         }
-
+        $verificationData = UserVerification::where('phone',$request->phone)->where('code_attempts','>',0)->where('code','!=',null)->first();
+        if (!is_null($verificationData)){
+            if ( ( time() - strtotime($verificationData->updated_at) ) > 120 ) {
+                return $this->error_response([],"Kodning amal qilish muddati tugagan","Срок действия кода истек","The code has expired");
+            }
+            if ( Crypt::decrypt($verificationData->code) == $request->code ) {
+                $verificationData->update([
+                    'code_attempts'=>5,
+                    'app_id'=>uniqid(),
+                    'code'=>null
+                ]);
+                return $this->success_response('success', ['app_id' => $verificationData->app_id]);
+            }else{
+                $verificationData->update(['code_attempts'=>$verificationData->code_attempts-1]);
+                return $this->error_response([],"Noto'g'ri verifikatsiya kod","Неверный код верификации","Invalid verification code");
+            }
+        }
+        return $this->error_response([],"Iltimos otp kodni qayta junatishni bosing.");
     }
+
 
 // 3. Get New Password and Save
     public function resetPassword(Request $request)
     {
-        $validatedData = $request->validate([
-            'phone' => 'required|string',
+        $validator = Validator::make($request->all(),[
+            'phone'=>[
+                "required",
+                Rule::exists('user_verifications')->where(fn($q) => $q->where(['phone'=>$request->phone,'app_id'=>$request->app_id])),
+            ],
             'password' => 'required|string|min:8|confirmed',
+            'app_id' => 'required',
         ]);
-
-        $phone = preg_replace('/[^0-9]/', '', $validatedData['phone']);
-        $user = User::where('phone', $phone)->first();
-
-        if (!$user) {
-            return $this->error_response2([
-                "uz" => "Foydalanuvchi topilmadi",
-                "ru" => "Пользователь не найден",
-                "en" => "User not found",
-            ]);
+        if($validator->fails()){
+            return $this->error_response([],$validator->errors()->first());
         }
+        User::where('phone',$request->phone)->update(['password'=>Hash::make($request->password)]);
 
-        // Update the user's password
-        $user->password = Hash::make($validatedData['password']);
-        $user->verification_code = null; // Clear the verification code
-        $user->save();
-
-        return $this->success_response("Password reset successfully");
+        return $this->success_response([
+            "uz" => "Parolni qayta tiklash muvaffaqiyatli bajarildi",
+            "ru" => "Пароль успешно сброшен",
+            "en" => "Password reset successful",
+        ]);
     }
-
 
 //    end forgot password
     protected function createTeam(User $user): void

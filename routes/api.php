@@ -23,13 +23,14 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'create']);
     Route::post('login', [AuthController::class, 'login']);
     Route::get('user/info', [AuthController::class, 'info'])->middleware('auth:sanctum');
-
 });
 
 Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
+Route::get('/get-last-track', [TrackerController::class, 'getLastTrack']);
 
-Route::prefix('password')->group(function () {
-    Route::post('/forgot', [AuthController::class, 'forgotPassword'])->name('password.forgot');
-    Route::post('/verify', [AuthController::class, 'verifyCode'])->name('password.verify');
-//    Route::post('/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+Route::group(['prefix' => 'password'], function () {
+    Route::post('/forgot', [AuthController::class, 'forgotPassword']);
+    Route::post('/verify', [AuthController::class, 'verifyCode']);
+    Route::post('/reset', [AuthController::class, 'resetPassword']);
+
 });

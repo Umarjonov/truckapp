@@ -13,19 +13,20 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
 
-    public function error_response($message, $code = 400, $data = null)
+    public function error_response($data,$uz,$ru=null,$en=null)
     {
         $error = [
             "status" => false,
+            "result"=>$data,
             "error" => [
-                "code" => $code,
-                "message" => $message
+                "code" => 400,
+                "message" => [
+                    "uz"=>$uz,
+                    "ru"=>$ru??$uz,
+                    "en"=>$en??$uz,
+                ]
             ]
         ];
-
-        if ($data != null) {
-            $error['error']['data'] = $data;
-        }
         return response()->json($error, 400);
     }
 
