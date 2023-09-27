@@ -155,7 +155,7 @@ class AuthController extends Controller
                 return $this->error_response([], "Noto'g'ri verifikatsiya kod", "Неверный код верификации", "Invalid verification code");
             }
         }
-        return $this->error_response([], "Iltimos otp kodni qayta junatishni bosing.");
+        return $this->error_response([], "Sms kod tastiqlanmadi va urunishlar ko'payib ketdi.Birozdan so'ng qayta harakat qilib ko'ring");
     }
 
 
