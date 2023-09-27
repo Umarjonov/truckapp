@@ -149,21 +149,15 @@ class AuthController extends Controller
                     'app_id' => uniqid(),
                     'code' => null
                 ]);
-<<<<<<< HEAD
-                return $this->success_response('success', ['app_id' => $verificationData->app_id]);
-=======
+//                return $this->success_response('success', ['app_id' => $verificationData->app_id]);
                 return $this->success_response(['app_id' => $verificationData->app_id], 'success');
->>>>>>> 8bb66dbded9a6b96a20fc6f8605d0ea0bf0ccb95
             } else {
                 $verificationData->update(['code_attempts' => $verificationData->code_attempts - 1]);
                 return $this->error_response([], "Noto'g'ri verifikatsiya kod", "Неверный код верификации", "Invalid verification code");
             }
         }
-<<<<<<< HEAD
-        return $this->error_response([], "Iltimos otp kodni qayta junatishni bosing.");
-=======
+//        return $this->error_response([], "Iltimos otp kodni qayta junatishni bosing.");
         return $this->error_response([], "Sms kod tastiqlanmadi va urunishlar ko'payib ketdi.Birozdan so'ng qayta harakat qilib ko'ring");
->>>>>>> 8bb66dbded9a6b96a20fc6f8605d0ea0bf0ccb95
     }
 
 
@@ -172,27 +166,20 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => [
-<<<<<<< HEAD
-                "required",
-=======
                 'required',
->>>>>>> 8bb66dbded9a6b96a20fc6f8605d0ea0bf0ccb95
                 Rule::exists('user_verifications')->where(fn($q) => $q->where(['phone' => $request->phone, 'app_id' => $request->app_id])),
             ],
             'password' => 'required|string|min:8|confirmed',
             'app_id' => 'required',
         ]);
-<<<<<<< HEAD
         if ($validator->fails()) {
             return $this->error_response([], $validator->errors()->first());
         }
         User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
-=======
 
         if ($validator->fails()) {
             return $this->error_response([], $validator->errors()->first());
         }
->>>>>>> 8bb66dbded9a6b96a20fc6f8605d0ea0bf0ccb95
 
         // Update the user's password
         User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
