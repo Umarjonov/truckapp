@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserVerification;
@@ -88,19 +89,19 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'phone'=>"required|exists:users,phone"
+        $validator = Validator::make($request->all(), [
+            'phone' => "required|exists:users,phone"
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return $this->error_response2([
                 "uz" => $validator->errors()->first(),
                 "ru" => $validator->errors()->first(),
                 "en" => $validator->errors()->first(),
             ]);
         }
-        $code = random_int(1000,9999);
+        $code = random_int(1000, 9999);
         $verification = UserVerification::updateOrCreate(
-            ['phone'=>$request->phone],
+            ['phone' => $request->phone],
             [
                 'code' => Crypt::encrypt($code),
                 'app_id' => null,
@@ -109,7 +110,7 @@ class AuthController extends Controller
         );
         $this->sendVerificationCode($verification->phone, $code);
 
-        return $this->success_response([],[
+        return $this->success_response([], [
             "uz" => "Tekshirish kodi muvaffaqiyatli yuborildi.",
             "ru" => "Код подтверждения успешно отправлен.",
             "en" => "Verification code sent successfully.",
@@ -119,10 +120,10 @@ class AuthController extends Controller
 
     protected function sendVerificationCode($phone, $code)
     {
-        $result = Http::withBasicAuth('admin','admin')
-            ->post("https://quramiz.uz/api/sendSMS",[
-                'phone'=>$phone,
-                'content'=>"Your verification code is: $code"
+        $result = Http::withBasicAuth('admin', 'admin')
+            ->post("https://quramiz.uz/api/sendSMS", [
+                'phone' => $phone,
+                'content' => "Your verification code is: $code"
             ])->json();
         return $result;
     }
@@ -130,56 +131,65 @@ class AuthController extends Controller
 
     public function verifyCode(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'phone'=>"required|exists:user_verifications,phone",
+        $validator = Validator::make($request->all(), [
+            'phone' => "required|exists:user_verifications,phone",
             'code' => 'required|numeric',
         ]);
-        if($validator->fails()){
-            return $this->error_response([],$validator->errors()->first());
+        if ($validator->fails()) {
+            return $this->error_response([], $validator->errors()->first());
         }
-        $verificationData = UserVerification::where('phone',$request->phone)->where('code_attempts','>',0)->where('code','!=',null)->first();
-        if (!is_null($verificationData)){
-            if ( ( time() - strtotime($verificationData->updated_at) ) > 120 ) {
-                return $this->error_response([],"Kodning amal qilish muddati tugagan","Срок действия кода истек","The code has expired");
+        $verificationData = UserVerification::where('phone', $request->phone)->where('code_attempts', '>', 0)->where('code', '!=', null)->first();
+        if (!is_null($verificationData)) {
+            if ((time() - strtotime($verificationData->updated_at)) > 120) {
+                return $this->error_response([], "Kodning amal qilish muddati tugagan", "Срок действия кода истек", "The code has expired");
             }
-            if ( Crypt::decrypt($verificationData->code) == $request->code ) {
+            if (Crypt::decrypt($verificationData->code) == $request->code) {
                 $verificationData->update([
-                    'code_attempts'=>5,
-                    'app_id'=>uniqid(),
-                    'code'=>null
+                    'code_attempts' => 5,
+                    'app_id' => uniqid(),
+                    'code' => null
                 ]);
-                return $this->success_response('success', ['app_id' => $verificationData->app_id]);
-            }else{
-                $verificationData->update(['code_attempts'=>$verificationData->code_attempts-1]);
-                return $this->error_response([],"Noto'g'ri verifikatsiya kod","Неверный код верификации","Invalid verification code");
+                return $this->success_response(['app_id' => $verificationData->app_id], 'success');
+            } else {
+                $verificationData->update(['code_attempts' => $verificationData->code_attempts - 1]);
+                return $this->error_response([], "Noto'g'ri verifikatsiya kod", "Неверный код верификации", "Invalid verification code");
             }
         }
-        return $this->error_response([],"Iltimos otp kodni qayta junatishni bosing.");
+        return $this->error_response([], "Iltimos otp kodni qayta junatishni bosing.");
     }
 
 
 // 3. Get New Password and Save
     public function resetPassword(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'phone'=>[
-                "required",
-                Rule::exists('user_verifications')->where(fn($q) => $q->where(['phone'=>$request->phone,'app_id'=>$request->app_id])),
+        $validator = Validator::make($request->all(), [
+            'phone' => [
+                'required',
+                Rule::exists('user_verifications')->where(fn($q) => $q->where(['phone' => $request->phone, 'app_id' => $request->app_id])),
             ],
             'password' => 'required|string|min:8|confirmed',
             'app_id' => 'required',
         ]);
-        if($validator->fails()){
-            return $this->error_response([],$validator->errors()->first());
-        }
-        User::where('phone',$request->phone)->update(['password'=>Hash::make($request->password)]);
 
-        return $this->success_response([
-            "uz" => "Parolni qayta tiklash muvaffaqiyatli bajarildi",
-            "ru" => "Пароль успешно сброшен",
-            "en" => "Password reset successful",
-        ]);
+        if ($validator->fails()) {
+            return $this->error_response([], $validator->errors()->first());
+        }
+
+        // Update the user's password
+        User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
+
+        // Fetch the user along with their roles
+        $user = User::where('phone', $request->phone)->with('roles')->firstOrFail();
+
+        $message = [
+            'uz' => 'Parolni qayta tiklash muvaffaqiyatli bajarildi',
+            'ru' => 'Пароль успешно сброшен',
+            'en' => 'Password reset successful',
+        ];
+
+        return $this->success_response($user, $message);
     }
+
 
 //    end forgot password
     protected function createTeam(User $user): void

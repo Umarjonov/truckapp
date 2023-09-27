@@ -25,8 +25,11 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('user/info', [AuthController::class, 'info'])->middleware('auth:sanctum');
 });
 
+
 Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
-Route::get('/get-last-track', [TrackerController::class, 'getLastTrack']);
+Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
+Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
+
 
 Route::group(['prefix' => 'password'], function () {
     Route::post('/forgot', [AuthController::class, 'forgotPassword']);
