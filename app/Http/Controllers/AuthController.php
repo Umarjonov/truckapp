@@ -51,15 +51,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('phone', 'password');
-        if (!Auth::attempt($credentials)) {
-            $message = [
-                "uz" => "Noto'g'ri kirish ma'lumotlari",
-                "ru" => "Неверные данные для входа",
-                "en" => "Invalid login details",
-            ];
+        if (!Auth::attempt($credentials)) return $this->error_response([], "Noto'g'ri kirish ma'lumotlari", "Неверные данные для входа", "Invalid login details");
 
-            return $this->error_response2($message);
-        }
 
         $user = User::where('phone', $credentials['phone'])->with('roles')->firstOrFail();
 
