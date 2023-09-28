@@ -56,7 +56,8 @@ class AuthController extends Controller
 
         $user = User::where('phone', $credentials['phone'])->with('roles')->firstOrFail();
 
-        auth()->user()->tokens()->delete();
+//        auth()->user()->tokens()->delete();
+        auth()->user()->tokens();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
