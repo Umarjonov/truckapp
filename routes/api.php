@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TrackerController;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'create']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::get('user/info', [AuthController::class, 'info'])->middleware('auth:sanctum');
+    Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
 });
 
 

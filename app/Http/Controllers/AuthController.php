@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserVerification;
@@ -13,7 +12,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -70,15 +68,6 @@ class AuthController extends Controller
             "en" => "The user has logged in",
         ];
         return $this->success_response($result, $message);
-    }
-
-    public function info()
-    {
-        $users = User::all();
-
-        return response()->json([
-            'users' => $users
-        ]);
     }
 
     public function forgotPassword(Request $request)
