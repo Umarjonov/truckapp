@@ -18,7 +18,7 @@ class TrackerController extends Controller
             'latitude' => 'required|string',
             'longitude' => 'required|string',
             'description' => 'required|string',
-            'image' => 'required|string', // Add validation rule for the Base64 image
+            'image' => 'required', // Add validation rule for the Base64 image
         ]);
 
         if ($validator->fails()) {
