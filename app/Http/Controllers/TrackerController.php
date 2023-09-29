@@ -84,7 +84,7 @@ class TrackerController extends Controller
 
 //    Admin panel
 
-    public function getUserTracks(Request $request)
+    public function userTruckDaily(Request $request)
     {
         // Get the start date and end date from the request
         $startDate = $request->input('start_date');
@@ -112,6 +112,26 @@ class TrackerController extends Controller
         ];
 
         return $this->success_response($users, $message);
+    }
+
+    public function getUserIdTracks($user_id)
+    {
+        $user = User::with(['tracks' => function ($query) {
+            // Filter tracks for today
+            $query->whereDate('created_at', Carbon::today());
+        }])->find($user_id);
+
+        if (!$user) {
+            return $this->error_response([], 'User not found');
+        }
+
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+        return $this->success_response($user, $message);
     }
 }
 
