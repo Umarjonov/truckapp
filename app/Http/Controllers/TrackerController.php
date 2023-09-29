@@ -82,15 +82,41 @@ class TrackerController extends Controller
         return $this->success_response($tracks, $message);
     }
 
+    public function getUserIdTracks($user_id)
+    {
+        $user = User::with(['tracks' => function ($query) {
+            // Filter tracks for today
+            $query->whereDate('created_at', Carbon::today());
+        }])->find($user_id);
+
+        if (!$user) {
+            return $this->error_response([], 'User not found');
+        }
+
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+        return $this->success_response($user, $message);
+    }
+
 //    Admin panel
 
     public function userTruckDaily(Request $request)
     {
-        // Get the start date and end date from the request
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        // Retrieve users with their tracks within the date range
         $users = User::with(['tracks' => function ($query) use ($startDate, $endDate) {
             $query->whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate);
@@ -114,24 +140,6 @@ class TrackerController extends Controller
         return $this->success_response($users, $message);
     }
 
-    public function getUserIdTracks($user_id)
-    {
-        $user = User::with(['tracks' => function ($query) {
-            // Filter tracks for today
-            $query->whereDate('created_at', Carbon::today());
-        }])->find($user_id);
 
-        if (!$user) {
-            return $this->error_response([], 'User not found');
-        }
-
-        $message = [
-            'uz' => 'Muvaffaqqiyatli',
-            'ru' => 'Успешно',
-            'en' => 'Successful',
-        ];
-
-        return $this->success_response($user, $message);
-    }
 }
 

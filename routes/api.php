@@ -41,5 +41,5 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'admin'], function () {
     Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
     Route::post('user/data/{user_id}', [TrackerController::class, 'getUserIdTracks'])->middleware('auth:sanctum');
-    Route::post('user/data/track', [TrackerController::class, 'userTruckDaily'])->middleware('auth:sanctum');
+    Route::post('user/info/track', [TrackerController::class, 'userTruckDaily'])->middleware('auth:sanctum');
 });
