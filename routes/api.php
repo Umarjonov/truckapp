@@ -23,7 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'create']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
 });
 
 
@@ -37,4 +36,10 @@ Route::group(['prefix' => 'password'], function () {
     Route::post('/verify', [AuthController::class, 'verifyCode']);
     Route::post('/reset', [AuthController::class, 'resetPassword']);
 
+});
+
+Route::group(['prefix' => 'admin'], function () {
+    Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
+    Route::post('user/data/{user_id}', [TrackerController::class, 'getUserTracks'])->middleware('auth:sanctum');
+    Route::post('user/data/track', [TrackerController::class, 'userTruckDaily'])->middleware('auth:sanctum');
 });

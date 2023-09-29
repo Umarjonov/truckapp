@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use App\Models\Track;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -16,9 +17,7 @@ class AdminController extends Controller
 
     public function info()
     {
-        $user = auth()->user();
-        if ($user->role_user->role_id === 3) {
-            $usersWithRoles = User::with('role_user')->get();
+        if ($usersWithRoles = User::all()) { // Assuming 'role' is the name of the relationship method.
             $message = [
                 'uz' => 'Foydalanuvchi ma\'lumotlari',
                 'ru' => 'Информация пользователя',
@@ -27,9 +26,16 @@ class AdminController extends Controller
 
             return $this->success_response($usersWithRoles, $message);
         } else {
-            return $this->error_response('Unauthorized', 403);
+            $errorResponse = [
+                'error' => [
+                    'uz' => 'Xatolik yuz berdi',
+                    'ru' => 'Произошла ошибка',
+                    'en' => 'An error occurred'
+                ]
+            ];
+
+            return response()->json($errorResponse, 400); // Return a JSON response with a 400 status code (Bad Request)
         }
     }
-
 
 }

@@ -26,12 +26,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -64,9 +59,15 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
+
     public function roles()
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    public function tracks()
+    {
+        return $this->hasMany(Track::class);
     }
 
     public function hasRole($rol_name)
