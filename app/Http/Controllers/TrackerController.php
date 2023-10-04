@@ -14,130 +14,156 @@ class TrackerController extends Controller
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'latitude' => 'required|string',
-            'longitude' => 'required|string',
-            'description' => 'required|string',
-            'image' => 'required', // Add validation rule for the Base64 image
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'latitude' => 'required|string',
+                'longitude' => 'required|string',
+                'description' => 'required|string',
+                'image' => 'required', // Add validation rule for the Base64 image
+            ]);
 
-        if ($validator->fails()) {
-            return $this->error_response2($validator->errors()->first());
+            if ($validator->fails()) {
+                return $this->error_response2($validator->errors()->first());
+            }
+
+            $data = $request->only('latitude', 'longitude', 'description');
+            $data['user_id'] = auth()->id();
+            $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
+            $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
+
+            $base64Image = $request->input('image');
+            $binaryImage = base64_decode($base64Image);
+
+            $imagePath = 'images/' . uniqid() . '.jpg';
+            Storage::disk('public')->put($imagePath, $binaryImage);
+            $data['image'] = $imagePath;
+
+            $result = Track::create($data);
+
+            $imageUrl = asset('storage/' . $imagePath);
+            $result['image_url'] = $imageUrl; // Assign the corrected image URL here
+            $message = ([
+                'en' => 'Your information has been received.',
+                'uz' => "Sizning ma'lumotlaringiz qabul qilindi.",
+                'ru' => 'Ваши данные получены.',
+            ]);
+
+            return $this->success_response($result, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $data = $request->only('latitude', 'longitude', 'description');
-        $data['user_id'] = auth()->id();
-        $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
-        $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
-
-        $base64Image = $request->input('image');
-        $binaryImage = base64_decode($base64Image);
-
-        $imagePath = 'images/' . uniqid() . '.jpg';
-        Storage::disk('public')->put($imagePath, $binaryImage);
-        $data['image'] = $imagePath;
-
-        $result = Track::create($data);
-
-        $imageUrl = asset('storage/' . $imagePath);
-        $result['image_url'] = $imageUrl; // Assign the corrected image URL here
-        $message = ([
-            'en' => 'Your information has been received.',
-            'uz' => "Sizning ma'lumotlaringiz qabul qilindi.",
-            'ru' => 'Ваши данные получены.',
-        ]);
-
-        return $this->success_response($result, $message);
     }
 
 //    last submit type
 
     public function lastsubmit()
     {
-        $tracks = Track::latest()->first();
+        try {
+            $tracks = Track::latest()->first();
 
-        $message = ([
-            'en' => 'History',
-            'uz' => "Tarix",
-            'ru' => 'История',
-        ]);
+            $message = ([
+                'en' => 'History',
+                'uz' => "Tarix",
+                'ru' => 'История',
+            ]);
 
-        return $this->success_response($tracks, $message);
+            return $this->success_response($tracks, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
 //    History for data
 
     public function getDataBetweenDates(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        try {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
 
-        $tracks = Track::whereBetween('created_at', [$startDate, $endDate])->get();
-        $message = ([
-            'en' => 'History',
-            'uz' => "Tarix",
-            'ru' => 'История',
-        ]);
+            $tracks = Track::whereBetween('created_at', [$startDate, $endDate])->get();
+            $message = ([
+                'en' => 'History',
+                'uz' => "Tarix",
+                'ru' => 'История',
+            ]);
 
-        return $this->success_response($tracks, $message);
+            return $this->success_response($tracks, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getUserIdTracks($user_id)
     {
-        $user = User::with(['tracks' => function ($query) {
-            // Filter tracks for today
-            $query->whereDate('created_at', Carbon::today());
-        }])->find($user_id);
+        try {
+            $user = User::with(['tracks' => function ($query) {
+                // Filter tracks for today
+                $query->whereDate('created_at', Carbon::today());
+            }])->find($user_id);
 
-        if (!$user) {
-            return $this->error_response([], 'User not found');
+            if (!$user) {
+                return $this->error_response([], 'User not found');
+            }
+
+            $message = [
+                'uz' => 'Muvaffaqqiyatli',
+                'ru' => 'Успешно',
+                'en' => 'Successful',
+            ];
+
+            return $this->success_response($user, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $message = [
-            'uz' => 'Muvaffaqqiyatli',
-            'ru' => 'Успешно',
-            'en' => 'Successful',
-        ];
-
-        return $this->success_response($user, $message);
     }
 
 //    Admin panel
 
     public function userTruckDaily(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+            ]);
 
-        if ($validator->fails()) {
-            return $this->error_response2($validator->errors()->first());
+            if ($validator->fails()) {
+                return $this->error_response2($validator->errors()->first());
+            }
+
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            $users = User::with(['tracks' => function ($query) use ($startDate, $endDate) {
+                $query->whereDate('created_at', '>=', $startDate)
+                    ->whereDate('created_at', '<=', $endDate);
+            }])->get();
+
+            if ($users->isEmpty()) {
+                return $this->error_response([], 'Users not found');
+            }
+
+            // Remove the user_id from each user object
+            $users->each(function ($user) {
+                unset($user->user_id);
+            });
+
+            $message = [
+                'uz' => 'Muvaffaqqiyatli',
+                'ru' => 'Успешно',
+                'en' => 'Successful',
+            ];
+
+            return $this->success_response($users, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-        $users = User::with(['tracks' => function ($query) use ($startDate, $endDate) {
-            $query->whereDate('created_at', '>=', $startDate)
-                ->whereDate('created_at', '<=', $endDate);
-        }])->get();
-
-        if ($users->isEmpty()) {
-            return $this->error_response([], 'Users not found');
-        }
-
-        // Remove the user_id from each user object
-        $users->each(function ($user) {
-            unset($user->user_id);
-        });
-
-        $message = [
-            'uz' => 'Muvaffaqqiyatli',
-            'ru' => 'Успешно',
-            'en' => 'Successful',
-        ];
-
-        return $this->success_response($users, $message);
     }
 
 
