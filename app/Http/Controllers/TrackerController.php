@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Track;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -62,18 +63,36 @@ class TrackerController extends Controller
         try {
             $tracks = Track::latest()->first();
 
-            $message = ([
+            // Fetch the user along with their roles
+            $user = User::where('id', $tracks->user_id)->with('roles')->firstOrFail();
+
+            $message = [
                 'en' => 'History',
                 'uz' => "Tarix",
                 'ru' => 'История',
-            ]);
+            ];
 
-            return $this->success_response($tracks, $message);
+            // Create the result array with the track data and role_id
+            $result = [
+                'id' => $tracks->id,
+                'user_id' => $tracks->user_id,
+                'image' => $tracks->image,
+                'latitude' => $tracks->latitude,
+                'longitude' => $tracks->longitude,
+                'type' => $tracks->type,
+                'created_at' => $tracks->created_at,
+                'updated_at' => $tracks->updated_at,
+                'description' => $tracks->description,
+                'role_id' => $user->roles->first()->id, // Assuming a user has only one role
+            ];
+
+            return $this->success_response($result, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
 //    History for data
 
