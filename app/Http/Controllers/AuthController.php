@@ -55,31 +55,21 @@ class AuthController extends Controller
     {
         try {
             $credentials = $request->only('phone', 'password');
-            if (!Auth::attempt($credentials)) return $this->error_response([], "Noto'g'ri kirish ma'lumotlari", "Неверные данные для входа", "Invalid login details");
+            if (!Auth::attempt($credentials)) {
+                return $this->error_response([], "Noto'g'ri kirish ma'lumotlari", "Неверные данные для входа", "Invalid login details");
+            }
 
             $user = User::where('phone', $credentials['phone'])->with('roles')->firstOrFail();
 
-            // auth()->user()->tokens()->delete();
-            auth()->user()->tokens();
-
+            // Create a token for the user
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Remove the "roles" array and add "role_id" to the result
-            $result = [
-                "id" => $user->id,
-                "name" => $user->name,
-                "email" => $user->email,
-                "phone" => $user->phone,
-                "email_verified_at" => $user->email_verified_at,
-                "two_factor_confirmed_at" => $user->two_factor_confirmed_at,
-                "current_team_id" => $user->current_team_id,
-                "profile_photo_path" => $user->profile_photo_path,
-                "created_at" => $user->created_at,
-                "updated_at" => $user->updated_at,
-                "token" => $token,
-                "profile_photo_url" => $user->profile_photo_url,
-                "role_id" => $user->roles->first()->id  // Assuming a user has only one role
-            ];
+            $result = $user->only([
+                'id', 'name', 'email', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
+            ]);
+            $result['token'] = $token;
+            $result['role_id'] = $user->roles->first()->id;
 
             $message = [
                 "uz" => "Foydalanuvchi tizimga kirdi",
@@ -89,8 +79,8 @@ class AuthController extends Controller
 
             return $this->success_response($result, $message);
         } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
+            // Handle exceptions here if needed
+            return $this->error_response([], "Xatolik yuz berdi", "Произошла ошибка", "An error occurred");
         }
     }
 
@@ -198,11 +188,15 @@ class AuthController extends Controller
                 return $this->error_response([], $validator->errors()->first());
             }
 
-            // Update the user's password
-            User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
+            // Update the user's password and fetch the user in a single query
+            $user = User::where('phone', $request->phone)->first();
+            if ($user) {
+                $user->update(['password' => Hash::make($request->password)]);
+            }
 
-            // Fetch the user
-            $user = User::where('phone', $request->phone)->firstOrFail();
+            if (!$user) {
+                return $this->error_response([], "User not found");
+            }
 
             $message = [
                 'uz' => 'Parolni qayta tiklash muvaffaqiyatli bajarildi',
@@ -211,19 +205,11 @@ class AuthController extends Controller
             ];
 
             // Create the result array with the user's data and role_id
-            $result = [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'email_verified_at' => $user->email_verified_at,
-                'two_factor_confirmed_at' => $user->two_factor_confirmed_at,
-                'current_team_id' => $user->current_team_id,
-                'profile_photo_path' => $user->profile_photo_path,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'role_id' => $user->roles->first()->id, // Assuming a user has only one role
-            ];
+            $result = $user->only([
+                'id', 'name', 'email', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'current_team_id', 'profile_photo_path', 'created_at', 'updated_at'
+            ]);
+            $result['role_id'] = $user->roles->first()->id; // Assuming a user has only one role
 
             return $this->success_response($result, $message);
         } catch (\Exception $e) {
@@ -231,7 +217,6 @@ class AuthController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 
 
 //    end forgot password
