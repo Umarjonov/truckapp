@@ -57,22 +57,36 @@ class AuthController extends Controller
             $credentials = $request->only('phone', 'password');
             if (!Auth::attempt($credentials)) return $this->error_response([], "Noto'g'ri kirish ma'lumotlari", "Неверные данные для входа", "Invalid login details");
 
-
             $user = User::where('phone', $credentials['phone'])->with('roles')->firstOrFail();
 
-//        auth()->user()->tokens()->delete();
+            // auth()->user()->tokens()->delete();
             auth()->user()->tokens();
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            // Remove the "roles" array and add "role_id" to the result
+            $result = [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "phone" => $user->phone,
+                "email_verified_at" => $user->email_verified_at,
+                "two_factor_confirmed_at" => $user->two_factor_confirmed_at,
+                "current_team_id" => $user->current_team_id,
+                "profile_photo_path" => $user->profile_photo_path,
+                "created_at" => $user->created_at,
+                "updated_at" => $user->updated_at,
+                "token" => $token,
+                "profile_photo_url" => $user->profile_photo_url,
+                "role_id" => $user->roles->first()->id  // Assuming a user has only one role
+            ];
 
-            $user['token'] = $token;
-            $result = $user;
             $message = [
                 "uz" => "Foydalanuvchi tizimga kirdi",
                 "ru" => "Пользователь вошёл в систему",
                 "en" => "The user has logged in",
             ];
+
             return $this->success_response($result, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
