@@ -197,17 +197,12 @@ class AuthController extends Controller
             if ($validator->fails()) {
                 return $this->error_response([], $validator->errors()->first());
             }
-            User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
-
-            if ($validator->fails()) {
-                return $this->error_response([], $validator->errors()->first());
-            }
 
             // Update the user's password
             User::where('phone', $request->phone)->update(['password' => Hash::make($request->password)]);
 
-            // Fetch the user along with their roles
-            $user = User::where('phone', $request->phone)->with('roles')->firstOrFail();
+            // Fetch the user
+            $user = User::where('phone', $request->phone)->firstOrFail();
 
             $message = [
                 'uz' => 'Parolni qayta tiklash muvaffaqiyatli bajarildi',
@@ -215,12 +210,28 @@ class AuthController extends Controller
                 'en' => 'Password reset successful',
             ];
 
-            return $this->success_response($user, $message);
+            // Create the result array with the user's data and role_id
+            $result = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'email_verified_at' => $user->email_verified_at,
+                'two_factor_confirmed_at' => $user->two_factor_confirmed_at,
+                'current_team_id' => $user->current_team_id,
+                'profile_photo_path' => $user->profile_photo_path,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'role_id' => $user->roles->first()->id, // Assuming a user has only one role
+            ];
+
+            return $this->success_response($result, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
 
 //    end forgot password
