@@ -43,3 +43,6 @@ Route::group(['prefix' => 'admin'], function () {
     Route::post('user/data/{user_id}', [TrackerController::class, 'getUserIdTracks'])->middleware('auth:sanctum');
     Route::post('user/info/track', [TrackerController::class, 'userTruckDaily'])->middleware('auth:sanctum');
 });
+Route::group(['prefix' => 'moderator'], function () {
+    Route::post('truck/update/{truck_id}', [TrackerController::class, 'updateTruckData'])->middleware('auth:sanctum');
+});
