@@ -192,17 +192,13 @@ class TrackerController extends Controller
             if (auth()->user()->roles->first()->id !== 2) {
                 return $this->error_response2('Unauthorized. You do not have the required role.');
             }
-
-            // Validate the request data
             $validator = Validator::make($request->all(), [
-                'created_at' => 'required|date', // Only allow updating the created_at field
+                'created_at' => 'required|date',
             ]);
 
             if ($validator->fails()) {
                 return $this->error_response2($validator->errors()->first());
             }
-
-            // Find the specific truck record by truck_id
             $truck = Track::find($truck_id);
 
             if (!$truck) {
@@ -211,18 +207,16 @@ class TrackerController extends Controller
 
             $data = $request->only('created_at');
 
-            // Update the truck record with the new created_at data
             $truck->update($data);
 
             $message = ([
                 'en' => 'Truck data has been updated.',
-                'uz' => "Yuk mashinasi ma'lumotlari yangilandi.",
+                'uz' => "Keldi-ketti ma'lumotlari yangilandi.",
                 'ru' => 'Данные грузовика обновлены.',
             ]);
 
             return $this->success_response($truck, $message);
         } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
