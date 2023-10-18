@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->decimal('latitude', 10, 7)->nullable()->default(null); // Adjust precision and scale as needed
             $table->decimal('longitude', 10, 7)->nullable()->default(null); // Adjust precision and scale as needed
+            $table->text('address')->nullable();
             $table->boolean('type')->default(false);
             $table->timestamps();
 

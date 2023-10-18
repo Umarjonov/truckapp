@@ -26,9 +26,12 @@ class AuthController extends Controller
                 'phone' => 'required|string|unique:users,phone',
                 'password' => 'required|string|min:8',
             ]);
+
             if ($validator->fails()) return $this->error_response2($validator->errors()->first());
 
+
             $data = $request->only('name', "email");
+
             $data['password'] = Hash::make($request->input('password'));
             $data['phone'] = preg_replace('/[^0-9]/', '', $request->get('phone'));
             $user = User::create($data);
@@ -37,7 +40,7 @@ class AuthController extends Controller
             $device = substr($request->userAgent() ?? '', 0, 255);
             $user['token'] = $user->createToken($device)->plainTextToken;
 
-            $user->roles()->attach(3);
+            $user->roles()->attach(1);
 
             $message = [
                 "uz" => "Foydalanuvchi yaratildi",
@@ -228,49 +231,5 @@ class AuthController extends Controller
             'personal_team' => true,
         ]));
     }
-
-    public function addModerator(Request $request)
-    {
-        try {
-            // Check if the authenticated user is a moderator
-            $authenticatedUserRole = auth()->user()->roles->first();
-            if ($authenticatedUserRole->id !== 2) {
-                return $this->error_response2('Unauthorized. You do not have the required role.');
-            }
-
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
-                'phone' => 'required|string|unique:users,phone',
-                'password' => 'required|string|min:8',
-            ]);
-
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
-
-            $data = $request->only('name', "email");
-            $data['password'] = Hash::make($request->input('password'));
-            $data['phone'] = preg_replace('/[^0-9]/', '', $request->get('phone'));
-            $user = User::create($data);
-            $this->createTeam($user);
-
-            $device = substr($request->userAgent() ?? '', 0, 255);
-            $user['token'] = $user->createToken($device)->plainTextToken;
-
-            $user->roles()->attach(3);
-
-            $message = [
-                "uz" => "Foydalanuvchi yaratildi",
-                "ru" => "Пользователь был создан",
-                "en" => "The user has been created",
-            ];
-
-            return $this->success_response($user, $message);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
+    
 }

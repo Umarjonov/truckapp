@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -13,17 +14,17 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
 
-    public function error_response($data,$uz,$ru=null,$en=null)
+    public function error_response($data, $uz, $ru = null, $en = null)
     {
         $error = [
             "status" => false,
-            "result"=>$data,
+            "result" => $data,
             "error" => [
                 "code" => 400,
                 "message" => [
-                    "uz"=>$uz,
-                    "ru"=>$ru??$uz,
-                    "en"=>$en??$uz,
+                    "uz" => $uz,
+                    "ru" => $ru ?? $uz,
+                    "en" => $en ?? $uz,
                 ]
             ]
         ];
@@ -55,6 +56,15 @@ class Controller extends BaseController
         }
         return response()->json($response, $code);
 
+    }
+
+    protected function createTeam(User $user): void
+    {
+        $user->ownedTeams()->save(Team::forceCreate([
+            'user_id' => $user->id,
+            'name' => explode(' ', $user->name, 2)[0] . "'s Team",
+            'personal_team' => true,
+        ]));
     }
 
 }

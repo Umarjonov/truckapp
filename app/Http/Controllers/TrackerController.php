@@ -20,6 +20,7 @@ class TrackerController extends Controller
                 'latitude' => 'required|string',
                 'longitude' => 'required|string',
                 'description' => 'required|string',
+                'address' => 'required|string',
                 'image' => 'required', // Add validation rule for the Base64 image
             ]);
 
@@ -189,7 +190,7 @@ class TrackerController extends Controller
     {
         try {
             // Check if the authenticated user has the required role (role_id equal to 2)
-            if (auth()->user()->roles->first()->id !== 2) {
+            if (auth()->user()->roles->first()->id !== 4) {
                 return $this->error_response2('Unauthorized. You do not have the required role.');
             }
             $validator = Validator::make($request->all(), [

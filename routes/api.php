@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompanyAdminController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TrackerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,10 +50,17 @@ Route::group(['prefix' => 'moderator'], function () {
     Route::post('truck/update/{truck_id}', [TrackerController::class, 'updateTruckData'])->middleware('auth:sanctum');
     Route::post('truck/add-user', [AuthController::class, 'addModerator'])->middleware('auth:sanctum');
 });
-
-
-
-
+Route::group(['prefix' => 'company'], function () {
+    Route::post('company-add', [CompanyController::class, 'createCompany'])->middleware('auth:sanctum');
+    Route::post('add/company-admin', [CompanyAdminController::class, 'addCompanyAdmin'])->middleware('auth:sanctum');
+    Route::post('companies/users', [CompanyController::class, 'viewCompanyUsers'])->middleware('auth:sanctum');
+    Route::post('companies/{companyId}/status-change', [CompanyController::class, 'changeCompanyStatus'])->middleware('auth:sanctum');
+});
+Route::group(['prefix' => 'company-admin'], function () {
+    Route::post('admin-add/manager', [EmployeeController::class, 'adminAddHrOrManager'])->middleware('auth:sanctum');
+    Route::post('manager-add/user', [EmployeeController::class, 'createAdminToUser'])->middleware('auth:sanctum');
+    Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
+});
 
 
 
