@@ -29,12 +29,11 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
-Route::group(['prefix' => 'local'], function () {
-    Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
-    Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
-    Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
-    Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
-});
+
+Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
+Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
+Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
+Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
 
 
 Route::group(['prefix' => 'password'], function () {
