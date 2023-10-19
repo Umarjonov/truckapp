@@ -28,7 +28,7 @@ class TrackerController extends Controller
                 return $this->error_response2($validator->errors()->first());
             }
 
-            $data = $request->only('latitude', 'longitude', 'description');
+            $data = $request->only('latitude', 'longitude', 'description', 'address');
             $data['user_id'] = auth()->id();
             $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
             $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;

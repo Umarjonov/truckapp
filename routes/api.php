@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyAdminController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\NotcameController;
 use App\Http\Controllers\TrackerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,10 +29,12 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
-
-Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
-Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
-Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
+Route::group(['prefix' => 'location'], function () {
+    Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
+    Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
+    Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
+    Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
+});
 
 
 Route::group(['prefix' => 'password'], function () {
