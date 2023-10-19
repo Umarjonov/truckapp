@@ -121,7 +121,7 @@ class EmployeeController extends Controller
             $user['token'] = $user->createToken($device)->plainTextToken;
 
             // Attach role 4 or 5 to the user based on your conditions
-            $user->roles()->attach(4); // Change to 4 or 5 as needed
+            $user->roles()->attach(6); // Change to 4 or 5 as needed
 
             $message = [
                 'uz' => 'Foydalanuvchi yaratildi',
