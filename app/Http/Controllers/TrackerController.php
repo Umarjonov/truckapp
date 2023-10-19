@@ -23,7 +23,7 @@ class TrackerController extends Controller
                 'address' => 'required|string',
                 'image' => 'required', // Add validation rule for the Base64 image
             ]);
-            dd($validator);
+
             if ($validator->fails()) {
                 return $this->error_response2($validator->errors()->first());
             }
