@@ -95,7 +95,7 @@ class TrackerController extends Controller
     }
 
 
-//    History for data
+
 
     public function getDataBetweenDates(Request $request)
     {

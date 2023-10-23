@@ -50,11 +50,13 @@ class CompanyController extends Controller
     public function viewCompanyUsers(Request $request)
     {
         try {
-            // Check if the authenticated user is a company_admin (role_id 2)
+            // Check if the authenticated user has one of the allowed role IDs (3, 4, or 5)
             $authenticatedUser = auth()->user();
             $authenticatedUserRole = $authenticatedUser->roles->first();
 
-            if ($authenticatedUserRole->id !== 3) {
+            $allowedRoleIds = [3, 4, 5];
+
+            if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
                 return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
             }
 
@@ -73,6 +75,7 @@ class CompanyController extends Controller
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
         }
+
     }
 
     public function changeCompanyStatus(Request $request, $companyId)
@@ -109,6 +112,27 @@ class CompanyController extends Controller
             User::where('company_id', $company->id)->update(['status' => $newStatus]);
 
             return $this->success_response($company, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function companyList()
+    {
+        try {
+            $authenticatedUserRole = auth()->user()->roles->first();
+            if ($authenticatedUserRole->id !== 1) {
+                return $this->error_response2('Unauthorized. You do not have the required role to change company status.');
+            }
+            $companies = Company::all(); // Fetch all companies from the database
+
+            $message = [
+                'uz' => 'Barcha kompaniyalar ro`yxati',
+                'ru' => 'Список всех компаний',
+                'en' => 'List of all companies',
+            ];
+
+            return $this->success_response($companies, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
