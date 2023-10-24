@@ -11,7 +11,7 @@ class Company extends Model
     protected $guarded = [];
     public function companyAdmins()
     {
-        return $this->hasMany(Company::class);
+        return $this->hasMany(CompanyAdmin::class);
     }
     public function track()
     {
