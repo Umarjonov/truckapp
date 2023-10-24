@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotcameController;
 use App\Http\Controllers\TrackerController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +33,6 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'location'], function () {
     Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
     Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
-    Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
     Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
 });
 
@@ -46,6 +46,7 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'admin'], function () {
     Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
     Route::post('user/data/{user_id}', [TrackerController::class, 'getUserIdTracks'])->middleware('auth:sanctum');
+    Route::post('user/data', [TrackerController::class, 'getUserTracks'])->middleware('auth:sanctum');
     Route::post('user/info/track', [CompanyController::class, 'getUserInfoAndTruckInfo'])->middleware('auth:sanctum');
 });
 Route::group(['prefix' => 'moderator'], function () {
@@ -63,6 +64,8 @@ Route::group(['prefix' => 'company-admin'], function () {
     Route::post('manager-add/user', [EmployeeController::class, 'createAdminToUser'])->middleware('auth:sanctum');
     Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
 });
+
+Route::post('/user/{userId}/status', [UserController::class, 'checkStatus'])->middleware('auth:sanctum');
 
 
 

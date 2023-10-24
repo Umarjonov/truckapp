@@ -117,7 +117,6 @@ class CompanyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     public function companyList()
     {
         try {
@@ -139,11 +138,9 @@ class CompanyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     public function getUserInfoAndTruckInfo(Request $request)
     {
         try {
-
             $validator = Validator::make($request->all(), [
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',

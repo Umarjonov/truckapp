@@ -65,14 +65,16 @@ class TrackerController extends Controller
         try {
             $tracks = Track::latest()->first();
 
-            // Fetch the user along with their roles
             $user = User::where('id', $tracks->user_id)->with('roles')->firstOrFail();
 
-            $message = [
-                'en' => 'History',
-                'uz' => "Tarix",
-                'ru' => 'История',
-            ];
+            if ($user->status === 'inactive') {
+                $message = [
+                    'en' => 'Your company is inactive',
+                    'uz' => 'Sizning kompaniyangiz faol emas',
+                    'ru' => 'Ваша компания неактивна',
+                ];
+                return $this->error_response2($message);
+            }
 
             // Create the result array with the track data and role_id
             $result = [
@@ -88,72 +90,34 @@ class TrackerController extends Controller
                 'role_id' => $user->roles->first()->id, // Assuming a user has only one role
             ];
 
-            return $this->success_response($result, $message);
+            return $this->success_response($result);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
         }
+
     }
 
 
-    public function getDataBetweenDates(Request $request)
-    {
-        try {
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
-
-            $tracks = Track::whereBetween('created_at', [$startDate, $endDate])->get();
-            $message = ([
-                'en' => 'History',
-                'uz' => "Tarix",
-                'ru' => 'История',
-            ]);
-
-            return $this->success_response($tracks, $message);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function getUserIdTracks(Request $request, $user_id)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date',
-                'end_date' => 'required|date',
-            ]);
-
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
-
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
-
-            $user = User::find($user_id);
-
-            if (!$user) {
-                return $this->error_response([], 'User not found');
-            }
-
-            $tracks = $user->tracks()->whereDate('created_at', '>=', $startDate)
-                ->whereDate('created_at', '<=', $endDate)
-                ->get();
-
-            $message = [
-                'uz' => 'Muvaffaqqiyatli',
-                'ru' => 'Успешно',
-                'en' => 'Successful',
-            ];
-
-            return $this->success_response($tracks, $message);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
+//    public function getDataBetweenDates(Request $request)
+//    {
+//        try {
+//            $startDate = $request->input('start_date');
+//            $endDate = $request->input('end_date');
+//
+//            $tracks = Track::whereBetween('created_at', [$startDate, $endDate])->get();
+//            $message = ([
+//                'en' => 'History',
+//                'uz' => "Tarix",
+//                'ru' => 'История',
+//            ]);
+//
+//            return $this->success_response($tracks, $message);
+//        } catch (\Exception $e) {
+//            // Handle any exceptions that may occur during the API request
+//            return response()->json(['error' => $e->getMessage()], 500);
+//        }
+//    }
 
     public function updateTruckData(Request $request, $truck_id)
     {
@@ -191,6 +155,68 @@ class TrackerController extends Controller
         }
     }
 
+//    public function getUserIdTracks(Request $request, $user_id)
+//    {
+//        try {
+//            $validator = Validator::make($request->all(), [
+//                'start_date' => 'required|date',
+//                'end_date' => 'required|date',
+//            ]);
+//
+//            if ($validator->fails()) {
+//                return $this->error_response2($validator->errors()->first());
+//            }
+//
+//            $startDate = $request->input('start_date');
+//            $endDate = $request->input('end_date');
+//
+//            $user = User::find($user_id);
+//
+//            if (!$user) {
+//                return $this->error_response([], 'User not found');
+//            }
+//
+//            $tracks = $user->tracks()->whereDate('created_at', '>=', $startDate)
+//                ->whereDate('created_at', '<=', $endDate)
+//                ->get();
+//
+//            $message = [
+//                'uz' => 'Muvaffaqqiyatli',
+//                'ru' => 'Успешно',
+//                'en' => 'Successful',
+//            ];
+//
+//            return $this->success_response($tracks, $message);
+//        } catch (\Exception $e) {
+//            // Handle any exceptions that may occur during the API request
+//            return response()->json(['error' => $e->getMessage()], 500);
+//        }
+//    }
 
+    public function getUserTracks(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
+
+        $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,type,created_at,updated_at,DATE(created_at) as created_date')
+            ->whereBetween('created_at', [$request->start_date, $request->end_date])
+            ->where('user_id', auth()->id())->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('created_date');
+
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+
+        return $this->success_response($tracks, $message);
+    }
 }
 

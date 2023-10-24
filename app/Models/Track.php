@@ -15,5 +15,9 @@ class Track extends Model
     {
         return $this->belongsToMany(User::class);
     }
+//    public function getCreatedAtAttribute($date)
+//    {
+//        return Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $date)->format('Y-m-d');
+//    }
 }
 

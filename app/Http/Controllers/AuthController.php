@@ -68,7 +68,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $result = $user->only([
-                'id', 'name', 'email', 'company_id', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'id', 'name', 'email', 'company_id','status', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
                 'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
             ]);
             $result['token'] = $token;
