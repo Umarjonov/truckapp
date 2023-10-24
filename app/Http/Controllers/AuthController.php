@@ -68,7 +68,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $result = $user->only([
-                'id', 'name', 'email', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'id', 'name', 'email', 'company_id', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
                 'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
             ]);
             $result['token'] = $token;
@@ -209,8 +209,8 @@ class AuthController extends Controller
 
             // Create the result array with the user's data and role_id
             $result = $user->only([
-                'id', 'name', 'email', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
-                'current_team_id', 'profile_photo_path', 'created_at', 'updated_at'
+                'id', 'name', 'email', 'company_id', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
             ]);
             $result['role_id'] = $user->roles->first()->id; // Assuming a user has only one role
 
@@ -231,5 +231,5 @@ class AuthController extends Controller
             'personal_team' => true,
         ]));
     }
-    
+
 }
