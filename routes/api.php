@@ -30,10 +30,10 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 Route::group(['prefix' => 'location'], function () {
-Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
-Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
-Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
-Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
+    Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
+    Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
+    Route::get('history-submit', [TrackerController::class, 'getDataBetweenDates'])->middleware('auth:sanctum');
+    Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
 });
 
 Route::group(['prefix' => 'password'], function () {
@@ -46,7 +46,7 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'admin'], function () {
     Route::get('user/info', [AdminController::class, 'info'])->middleware('auth:sanctum');
     Route::post('user/data/{user_id}', [TrackerController::class, 'getUserIdTracks'])->middleware('auth:sanctum');
-    Route::post('user/info/track', [TrackerController::class, 'userTruckDaily'])->middleware('auth:sanctum');
+    Route::post('user/info/track', [CompanyController::class, 'getUserInfoAndTruckInfo'])->middleware('auth:sanctum');
 });
 Route::group(['prefix' => 'moderator'], function () {
     Route::post('truck/update/{truck_id}', [TrackerController::class, 'updateTruckData'])->middleware('auth:sanctum');

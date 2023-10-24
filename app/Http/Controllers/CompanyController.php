@@ -117,6 +117,7 @@ class CompanyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
     public function companyList()
     {
         try {
@@ -133,6 +134,57 @@ class CompanyController extends Controller
             ];
 
             return $this->success_response($companies, $message);
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur during the API request
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getUserInfoAndTruckInfo(Request $request)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error_response2($validator->errors()->first());
+            }
+
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            $company = auth()->user()->company;
+
+            if (!$company) {
+                return $this->error_response2('Company not found');
+            }
+
+            $users = User::where('company_id', $company->id)
+                ->with(['tracks' => function ($query) use ($startDate, $endDate) {
+                    $query->whereDate('created_at', '>=', $startDate)
+                        ->whereDate('created_at', '<=', $endDate);
+                }])
+                ->get();
+
+            if ($users->isEmpty()) {
+                return $this->error_response([], 'Users not found');
+            }
+
+            // Remove the user_id from each user object
+            $users->each(function ($user) {
+                unset($user->user_id);
+            });
+
+            $message = [
+                'uz' => 'Muvaffaqqiyatli',
+                'ru' => 'Успешно',
+                'en' => 'Successful',
+            ];
+
+            return $this->success_response($users, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
