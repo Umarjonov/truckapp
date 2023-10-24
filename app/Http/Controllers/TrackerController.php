@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Track;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -95,8 +96,6 @@ class TrackerController extends Controller
     }
 
 
-
-
     public function getDataBetweenDates(Request $request)
     {
         try {
@@ -117,17 +116,30 @@ class TrackerController extends Controller
         }
     }
 
-    public function getUserIdTracks($user_id)
+    public function getUserIdTracks(Request $request, $user_id)
     {
         try {
-            $user = User::with(['tracks' => function ($query) {
-                // Filter tracks for today
-                $query->whereDate('created_at', Carbon::today());
-            }])->find($user_id);
+            $validator = Validator::make($request->all(), [
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error_response2($validator->errors()->first());
+            }
+
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            $user = User::find($user_id);
 
             if (!$user) {
                 return $this->error_response([], 'User not found');
             }
+
+            $tracks = $user->tracks()->whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->get();
 
             $message = [
                 'uz' => 'Muvaffaqqiyatli',
@@ -135,7 +147,7 @@ class TrackerController extends Controller
                 'en' => 'Successful',
             ];
 
-            return $this->success_response($user, $message);
+            return $this->success_response($tracks, $message);
         } catch (\Exception $e) {
             // Handle any exceptions that may occur during the API request
             return response()->json(['error' => $e->getMessage()], 500);
@@ -185,6 +197,7 @@ class TrackerController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     public function updateTruckData(Request $request, $truck_id)
     {

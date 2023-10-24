@@ -50,7 +50,6 @@ Route::group(['prefix' => 'admin'], function () {
 });
 Route::group(['prefix' => 'moderator'], function () {
     Route::post('truck/update/{truck_id}', [TrackerController::class, 'updateTruckData'])->middleware('auth:sanctum');
-    Route::post('truck/add-user', [AuthController::class, 'addModerator'])->middleware('auth:sanctum');
 });
 Route::group(['prefix' => 'company'], function () {
     Route::post('company-add', [CompanyController::class, 'createCompany'])->middleware('auth:sanctum');
