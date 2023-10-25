@@ -108,12 +108,12 @@ class CompanyController extends Controller
                 'en' => 'Company status changed',
             ];
 
-            // Update user statuses associated with this company
+
             User::where('company_id', $company->id)->update(['status' => $newStatus]);
 
             return $this->success_response($company, $message);
         } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
+           
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -125,7 +125,7 @@ class CompanyController extends Controller
             if ($authenticatedUserRole->id !== 1) {
                 return $this->error_response2('Unauthorized. You do not have the required role to change company status.');
             }
-            $companies = Company::all(); // Fetch all companies from the database
+            $companies = Company::all();
 
             $message = [
                 'uz' => 'Barcha kompaniyalar ro`yxati',
@@ -171,7 +171,7 @@ class CompanyController extends Controller
                 ->groupBy(function ($track) {
                     return $track->created_at->toDateString();
                 })
-                ->all(); // Convert the grouped tracks to an array
+                ->all();
             unset($user->user_id);
 
             return $user;
