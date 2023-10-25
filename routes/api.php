@@ -65,7 +65,6 @@ Route::group(['prefix' => 'company-admin'], function () {
     Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
 });
 
-Route::post('/user/{userId}/status', [UserController::class, 'checkStatus'])->middleware('auth:sanctum');
 
 
 
