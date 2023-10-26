@@ -203,7 +203,7 @@ class TrackerController extends Controller
             return $this->error_response2($validator->errors()->first());
         }
 
-        $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,type,created_at,updated_at,DATE(created_at) as created_date')
+        $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,description,type,created_at,updated_at,DATE(created_at) as created_date')
             ->whereBetween('created_at', [$request->start_date, $request->end_date])
             ->where('user_id', auth()->id())->orderBy('created_at', 'desc')
             ->get()
@@ -230,7 +230,7 @@ class TrackerController extends Controller
             return $this->error_response2($validator->errors()->first());
         }
 
-        $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, type, created_at, updated_at, DATE(created_at) as created_date')
+        $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, type, description,created_at, updated_at, DATE(created_at) as created_date')
             ->whereBetween('created_at', [$request->start_date, $request->end_date])
             ->where('user_id', $user_id) // Modified to use the $user_id parameter
             ->orderBy('created_at', 'desc')
