@@ -113,7 +113,7 @@ class CompanyController extends Controller
 
             return $this->success_response($company, $message);
         } catch (\Exception $e) {
-           
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -185,6 +185,5 @@ class CompanyController extends Controller
 
         return $this->success_response($groupedUsers, $message);
     }
-
 
 }
