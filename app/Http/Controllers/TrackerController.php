@@ -138,124 +138,133 @@ class TrackerController extends Controller
 
     public function getUserTracks(Request $request)
     {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date',
-                'end_date' => 'required|date',
-            ]);
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
 
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
 
-            $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,description,type,created_at,updated_at,DATE(created_at) as created_date')
-                ->whereBetween('created_at', [$request->start_date, $request->end_date])
-                ->where('user_id', auth()->id())->orderBy('created_at', 'desc')
-                ->get()
-                ->groupBy('created_date');
+        $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,description,type,created_at,updated_at,DATE(created_at) as created_date')
+            ->whereBetween('created_at', [$request->start_date, $request->end_date])
+            ->where('user_id', auth()->id())->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('created_date');
 
-            $data= [];
-            foreach ($tracks as $track){
-                $first = $track->first();
-                $last = $track->last();
-                $data[]=[
-                    "address"=>$first->address,
-                    "image"=>$first->image,
-                    "in_date"=>$first->created_at,
-                    "out_date"=>$last->type==1?$last->created_at:'',
-                    "tracks"=>$track,
-                ];
-            }
-            $message = [
-                'uz' => 'Muvaffaqqiyatli',
-                'ru' => 'Успешно',
-                'en' => 'Successful',
+        $data = [];
+        foreach ($tracks as $track) {
+            $first = $track->first();
+            $last = $track->last();
+            $data[] = [
+                "address" => $first->address,
+                "image" => $first->image,
+                "in_date" => $first->created_at,
+                "out_date" => $last->type == 1 ? $last->created_at : '',
+                "tracks" => $track,
             ];
+        }
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
 
-            return $this->success_response($data, $message);
+        return $this->success_response($data, $message);
 
     }
 
 
     public function getUserTracksByUserId(Request $request, $user_id)
     {
-        try {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date',
-                'end_date' => 'required|date',
-            ]);
 
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
 
-            $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, type, description,created_at, updated_at, DATE(created_at) as created_date')
-                ->whereBetween('created_at', [$request->start_date, $request->end_date])
-                ->where('user_id', $user_id) // Modified to use the $user_id parameter
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->groupBy('created_date');
-
-            $message = [
-                'uz' => 'Muvaffaqqiyatli',
-                'ru' => 'Успешно',
-                'en' => 'Successful',
-            ];
-
-            return $this->success_response($tracks, $message);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
         }
+
+        $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, type, description,created_at, updated_at, DATE(created_at) as created_date')
+            ->whereBetween('created_at', [$request->start_date, $request->end_date])
+            ->where('user_id', $user_id) // Modified to use the $user_id parameter
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('created_date');
+
+        $data = [];
+        foreach ($tracks as $track) {
+            $first = $track->first();
+            $last = $track->last();
+            $data[] = [
+                "address" => $first->address,
+                "image" => $first->image,
+                "in_date" => $first->created_at,
+                "out_date" => $last->type == 1 ? $last->created_at : '',
+                "tracks" => $track,
+            ];
+        }
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+        return $this->success_response($data, $message);
+
     }
 
     public function getUserTracksUpdate(Request $request)
     {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date',
-                'end_date' => 'required|date',
-            ]);
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
 
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
 
-            $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, description, type, created_at, updated_at, DATE(created_at) as created_date')
-                ->whereBetween('created_at', [$request->start_date, $request->end_date])
-                ->where('user_id', auth()->id())
-                ->orderBy('created_at', 'asc') // Change to ascending order to ensure type 0 tracks come first
-                ->get();
+        $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, description, type, created_at, updated_at, DATE(created_at) as created_date')
+            ->whereBetween('created_at', [$request->start_date, $request->end_date])
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'asc') // Change to ascending order to ensure type 0 tracks come first
+            ->get();
 
 
-            $groupedTracks = [];
-            $currentGroup = [];
+        $groupedTracks = [];
+        $currentGroup = [];
 
-            foreach ($tracks as $track) {
-                if ($track->type == 0) {
-                    // Found a type 0 track, save it to the current group
-                    $currentGroup = [$track];
-                } elseif ($track->type == 1) {
-                    // Found a type 1 track, check if there is a current group with type 0 track
-                    if (!empty($currentGroup)) {
-                        // Type 1 track with a preceding type 0 track found, add it to the current group
-                        $currentGroup[] = $track;
-                        $groupedTracks[] = $currentGroup;
-                        $currentGroup = []; // Reset the current group
-                    }
+        foreach ($tracks as $track) {
+            if ($track->type == 0) {
+                // Found a type 0 track, save it to the current group
+                $currentGroup = [$track];
+            } elseif ($track->type == 1) {
+                // Found a type 1 track, check if there is a current group with type 0 track
+                if (!empty($currentGroup)) {
+                    // Type 1 track with a preceding type 0 track found, add it to the current group
+                    $currentGroup[] = $track;
+                    $groupedTracks[] = $currentGroup;
+                    $currentGroup = []; // Reset the current group
                 }
             }
+        }
 
-            // If there are remaining tracks in the current group, add them as well
-            if (!empty($currentGroup)) {
-                $groupedTracks[] = $currentGroup;
-            }
+        // If there are remaining tracks in the current group, add them as well
+        if (!empty($currentGroup)) {
+            $groupedTracks[] = $currentGroup;
+        }
 
-            $message = [
-                'uz' => 'Muvaffaqqiyatli',
-                'ru' => 'Успешно',
-                'en' => 'Successful',
-            ];
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
 
-            return $this->success_response($groupedTracks, $message);
+        return $this->success_response($groupedTracks, $message);
 
     }
 

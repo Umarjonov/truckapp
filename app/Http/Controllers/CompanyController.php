@@ -185,5 +185,4 @@ class CompanyController extends Controller
 
         return $this->success_response($groupedUsers, $message);
     }
-
 }
