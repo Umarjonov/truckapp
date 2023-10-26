@@ -218,5 +218,33 @@ class TrackerController extends Controller
 
         return $this->success_response($tracks, $message);
     }
+
+    public function getUserTracksByUserId(Request $request, $user_id)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
+
+        $tracks = Track::selectRaw('id, user_id, image, latitude, longitude, address, type, created_at, updated_at, DATE(created_at) as created_date')
+            ->whereBetween('created_at', [$request->start_date, $request->end_date])
+            ->where('user_id', $user_id) // Modified to use the $user_id parameter
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('created_date');
+
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+        return $this->success_response($tracks, $message);
+    }
+
 }
 

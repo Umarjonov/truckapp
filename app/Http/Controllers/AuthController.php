@@ -68,7 +68,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $result = $user->only([
-                'id', 'name', 'email', 'company_id','status', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
+                'id', 'name', 'email', 'company_id', 'status', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
                 'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
             ]);
             $result['token'] = $token;
@@ -201,6 +201,9 @@ class AuthController extends Controller
                 return $this->error_response([], "User not found");
             }
 
+            // Create a token for the user
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             $message = [
                 'uz' => 'Parolni qayta tiklash muvaffaqiyatli bajarildi',
                 'ru' => 'Пароль успешно сброшен',
@@ -213,6 +216,7 @@ class AuthController extends Controller
                 'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
             ]);
             $result['role_id'] = $user->roles->first()->id; // Assuming a user has only one role
+            $result['token'] = $token;
 
             return $this->success_response($result, $message);
         } catch (\Exception $e) {
