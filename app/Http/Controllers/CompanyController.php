@@ -142,47 +142,45 @@ class CompanyController extends Controller
 
     public function getUserInfoAndTruckInfo(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-        ]);
+        $date = $request->input('date', date('Y-m-d'));
+        $companyId = auth()->user()->company_id;
 
-        if ($validator->fails()) {
-            return $this->error_response2($validator->errors()->first());
-        }
-
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-        $company = auth()->user()->company;
-
-        if (!$company) {
-            return $this->error_response2('Company not found');
-        }
-
-        $users = User::where('company_id', $company->id)
-            ->with('tracks')
+        $users = User::with(['tracks' => function ($query) use ($date) {
+            $query->whereBetween("created_at", [$date, $date . " 23:59:59"])
+                ->orderBy('created_at', 'asc'); // Order the tracks by creation date in ascending order
+        }])
+            ->where('company_id', $companyId)
             ->get();
 
-        // Group the tracks by created_date
-        $groupedUsers = $users->map(function ($user) use ($startDate, $endDate) {
-            $user->tracks = $user->tracks
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->groupBy(function ($track) {
-                    return $track->created_at->toDateString();
-                })
-                ->all();
-            unset($user->user_id);
+        $result = [];
 
-            return $user;
-        });
+        foreach ($users as $user) {
+            $firstTrackType0 = null;
+            $lastTrackType1 = null;
 
+            foreach ($user->tracks as $track) {
+                if ($track->type === 0 && $firstTrackType0 === null) {
+                    $firstTrackType0 = $track;
+                }
+                if ($track->type === 1) {
+                    $lastTrackType1 = $track;
+                }
+            }
+
+            // Add only the desired track information to the result
+            $result[] = [
+                'user' => $user,
+                'first_track_type_0' => $firstTrackType0,
+                'last_track_type_1' => $lastTrackType1,
+            ];
+        }
         $message = [
             'uz' => 'Muvaffaqqiyatli',
             'ru' => 'Успешно',
             'en' => 'Successful',
         ];
-
-        return $this->success_response($groupedUsers, $message);
+        return $this->success_response($result, $message);
     }
+
+
 }
