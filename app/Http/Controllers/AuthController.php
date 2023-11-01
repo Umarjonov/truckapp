@@ -213,7 +213,7 @@ class AuthController extends Controller
             // Create the result array with the user's data and role_id
             $result = $user->only([
                 'id', 'name', 'email', 'company_id', 'company_inn', 'phone', 'email_verified_at', 'two_factor_confirmed_at',
-                'current_team_id', 'profile_photo_path', 'created_at', 'updated_at', 'profile_photo_url'
+                'current_team_id', 'created_at', 'updated_at',
             ]);
             $result['role_id'] = $user->roles->first()->id; // Assuming a user has only one role
             $result['token'] = $token;
