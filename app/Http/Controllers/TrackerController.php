@@ -20,7 +20,7 @@ class TrackerController extends Controller
             $validator = Validator::make($request->all(), [
                 'latitude' => 'required|string',
                 'longitude' => 'required|string',
-                'description' => 'required|string',
+                'description' => 'nullable|string',
                 'address' => 'required|string',
                 'image' => 'required', // Add validation rule for the Base64 image
             ]);
