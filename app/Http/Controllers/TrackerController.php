@@ -162,7 +162,7 @@ class TrackerController extends Controller
             $data[] = [
                 "address" => $first->address,
                 "image" => $first->image,
-                "in_date" => $first->type == 0 ? $first->created_at : '',
+                "in_date" => $first->created_at,
                 "out_date" => $last->type == 1 ? $last->created_at : '',
                 "tracks" => $track,
             ];
@@ -220,67 +220,6 @@ class TrackerController extends Controller
     }
 
 //    --------------------- test --------------------
-
-//    public function getUserTracks(Request $request)
-//    {
-//        // Validate the input
-//        $validator = Validator::make($request->all(), [
-//            'start_date' => 'required|date',
-//            'end_date' => 'required|date',
-//        ]);
-//
-//        if ($validator->fails()) {
-//            return $this->error_response2($validator->errors()->first());
-//        }
-//
-//        $user_id = auth()->id();
-//
-//        $tracks = Track::select([
-//            'id', 'user_id', 'image', 'latitude', 'longitude',
-//            'address', 'description', 'type',
-//            'created_at', 'updated_at',
-//            DB::raw('DATE(created_at) as created_date')
-//        ])
-//            ->where('user_id', $user_id)
-//            ->whereBetween('created_at', [$request->start_date, $request->end_date])
-//            ->orderBy('created_at', 'asc')
-//            ->get();
-//
-//        $data = [];
-//        $nextTrack = null;
-//        $out_date = '';
-//
-//        foreach ($tracks->groupBy('created_date') as $date => $groupedTracks) {
-//            $first = $groupedTracks->first();
-//            $last = $groupedTracks->last();
-//
-//            if ($last->type == 0) {
-//                $nextTrack = $groupedTracks->first(function ($item) {
-//                    return $item->type == 1;
-//                });
-//            } else {
-//                $out_date = $last->created_at;
-//            }
-//
-//            $data[] = [
-//                "address" => $first->address,
-//                "image" => $first->image,
-//                "in_date" => $first->created_at,
-//                "out_date" => $out_date,
-//                "next_type_1_date" => $nextTrack ? $nextTrack->created_at : '',
-//                "tracks" => $groupedTracks,
-//            ];
-//        }
-//
-//        $message = [
-//            'uz' => 'Muvaffaqqiyatli',
-//            'ru' => 'Успешно',
-//            'en' => 'Successful',
-//        ];
-//
-//        return $this->success_response($data, $message);
-//    }
-
 
 
 }
