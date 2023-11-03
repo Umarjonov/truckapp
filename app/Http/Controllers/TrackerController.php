@@ -51,8 +51,9 @@ class TrackerController extends Controller
             }
 
             $imagePath = 'images/' . uniqid() . '.' . $imageType;
+            $publicPath = public_path($imagePath);
 
-            Storage::disk('public')->put($imagePath, $binaryImage);
+            file_put_contents($publicPath, $binaryImage);
             $data['image'] = $imagePath;
 
             $result = Track::create($data);
