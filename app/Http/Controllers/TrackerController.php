@@ -42,15 +42,26 @@ class TrackerController extends Controller
             $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
 
             $base64Image = $request->input('image');
-            $imageParts = explode(";base64,", $base64Image);
-            $imageType = explode("image/", $imageParts[0])[1];
-            $binaryImage = base64_decode($imageParts[1]);
+            list($imageType, $imageData) = explode(";base64,", $base64Image);
+            list(, $imageType) = explode(":", $imageType);
+            list(, $imageExtension) = explode("/", $imageType);
+
+            $imageExtension = strtolower($imageExtension); // Convert to lowercase for consistency
+
+            // You can allow all image extensions or add additional extensions as needed
+            $allowedExtensions = ['jpeg', 'png', 'jpg', 'gif', 'bmp'];
+
+            if (!in_array($imageExtension, $allowedExtensions)) {
+                return $this->error_response2('Invalid image type. Allowed types are JPEG, PNG, JPG, GIF, BMP, etc.');
+            }
+
+            $binaryImage = base64_decode($imageData);
 
             if ($binaryImage === false) {
                 return $this->error_response2('Invalid image data');
             }
 
-            $imagePath = 'images/' . uniqid() . '.' . $imageType;
+            $imagePath = 'images/' . uniqid() . '.' . $imageExtension;
             $publicPath = public_path($imagePath);
 
             file_put_contents($publicPath, $binaryImage);
