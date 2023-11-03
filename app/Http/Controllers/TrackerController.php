@@ -30,22 +30,36 @@ class TrackerController extends Controller
                 return $this->error_response2($validator->errors()->first());
             }
 
+            // Ensure the user is authenticated
+            if (!auth()->check()) {
+                return $this->error_response2('User is not authenticated.');
+            }
+
             $data = $request->only('latitude', 'longitude', 'description', 'address');
             $data['user_id'] = auth()->id();
+
             $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
             $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
 
             $base64Image = $request->input('image');
-            $binaryImage = base64_decode($base64Image);
+            $imageParts = explode(";base64,", $base64Image);
+            $imageType = explode("image/", $imageParts[0])[1];
+            $binaryImage = base64_decode($imageParts[1]);
 
-            $imagePath = 'images/' . uniqid() . '.jpg';
+            if ($binaryImage === false) {
+                return $this->error_response2('Invalid image data');
+            }
+
+            $imagePath = 'images/' . uniqid() . '.' . $imageType;
+
             Storage::disk('public')->put($imagePath, $binaryImage);
             $data['image'] = $imagePath;
 
             $result = Track::create($data);
 
-            $imageUrl = asset('storage/' . $imagePath);
-            $result['image_url'] = $imageUrl; // Assign the corrected image URL here
+            $imageUrl = asset($imagePath);
+            $result['image_url'] = $imageUrl;
+
             $message = ([
                 'en' => 'Your information has been received.',
                 'uz' => "Sizning ma'lumotlaringiz qabul qilindi.",
@@ -58,6 +72,7 @@ class TrackerController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
 //    last submit type
 
