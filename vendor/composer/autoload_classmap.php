@@ -26,6 +26,7 @@ return array(
     'App\\Http\\Controllers\\CompanyController' => $baseDir . '/app/Http/Controllers/CompanyController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\EmployeeController' => $baseDir . '/app/Http/Controllers/EmployeeController.php',
+    'App\\Http\\Controllers\\NotcameController' => $baseDir . '/app/Http/Controllers/NotcameController.php',
     'App\\Http\\Controllers\\RoleController' => $baseDir . '/app/Http/Controllers/RoleController.php',
     'App\\Http\\Controllers\\TrackerController' => $baseDir . '/app/Http/Controllers/TrackerController.php',
     'App\\Http\\Controllers\\UserController' => $baseDir . '/app/Http/Controllers/UserController.php',

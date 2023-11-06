@@ -61,10 +61,17 @@ class TrackerController extends Controller
                 return $this->error_response2('Invalid image data');
             }
 
-            $imagePath = 'images/' . uniqid() . '.' . $imageExtension;
+            // Create a new folder in the 'public' directory based on the current month
+            $currentMonthFolder = public_path('images/' . date('Y-m'));
+            if (!file_exists($currentMonthFolder)) {
+                mkdir($currentMonthFolder, 0755, true);
+            }
+
+            $imagePath = 'images/' . date('Y-m') . '/' . uniqid() . '.' . $imageExtension;
             $publicPath = public_path($imagePath);
 
-            file_put_contents($publicPath, $binaryImage);
+            file_put_contents($publicPath, $binaryImage); // Save the image using file_put_contents
+
             $data['image'] = $imagePath;
 
             $result = Track::create($data);

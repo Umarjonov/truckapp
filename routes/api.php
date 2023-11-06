@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotcameController;
 use App\Http\Controllers\TrackerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserListController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,7 @@ Route::group(['prefix' => 'company-admin'], function () {
     Route::post('admin-add/manager', [EmployeeController::class, 'adminAddHrOrManager'])->middleware('auth:sanctum');
     Route::post('manager-add/user', [EmployeeController::class, 'createAdminToUser'])->middleware('auth:sanctum');
     Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
+    Route::post('users/{id}/position', [UserListController::class, 'makePosition'])->middleware('auth:sanctum');
 });
 
 
