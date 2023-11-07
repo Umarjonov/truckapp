@@ -46,6 +46,8 @@ return array(
     'App\\Models\\Membership' => $baseDir . '/app/Models/Membership.php',
     'App\\Models\\Notcame' => $baseDir . '/app/Models/Notcame.php',
     'App\\Models\\Permission' => $baseDir . '/app/Models/Permission.php',
+    'App\\Models\\Position' => $baseDir . '/app/Models/Position.php',
+    'App\\Models\\Rank' => $baseDir . '/app/Models/Rank.php',
     'App\\Models\\Role' => $baseDir . '/app/Models/Role.php',
     'App\\Models\\Team' => $baseDir . '/app/Models/Team.php',
     'App\\Models\\TeamInvitation' => $baseDir . '/app/Models/TeamInvitation.php',

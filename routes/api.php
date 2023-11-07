@@ -6,6 +6,8 @@ use App\Http\Controllers\CompanyAdminController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotcameController;
+use App\Http\Controllers\PositionController;
+use App\Http\Controllers\RankController;
 use App\Http\Controllers\TrackerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserListController;
@@ -67,9 +69,14 @@ Route::group(['prefix' => 'company-admin'], function () {
     Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
     Route::post('users/{id}/position', [UserListController::class, 'makePosition'])->middleware('auth:sanctum');
 });
-
-
-
+Route::group(['prefix' => 'position'], function () {
+    Route::post('create-position', [PositionController::class, 'createPosition'])->middleware('auth:sanctum');
+    Route::post('get-positions', [PositionController::class, 'getAllPositions'])->middleware('auth:sanctum');
+});
+Route::group(['prefix' => 'rank'], function () {
+    Route::post('create-rank', [RankController::class, 'createRank'])->middleware('auth:sanctum');
+    Route::post('get-ranks', [RankController::class, 'getAllRanks'])->middleware('auth:sanctum');
+});
 
 
 
