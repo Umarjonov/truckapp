@@ -14,14 +14,18 @@ class EmployeeController extends Controller
     public function adminAddHrOrManager(Request $request)
     {
         try {
-            $authenticatedUserRole = auth()->user()->roles->first();
-            if ($authenticatedUserRole->id !== 3) {
-                return $this->error_response2('Unauthorized. You do not have the required role.');
+            $authenticatedUser = auth()->user();
+            $authenticatedUserRole = $authenticatedUser->roles->first();
+
+            $allowedRoleIds = [1, 3, 4, 5];
+
+            if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+                return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
             }
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'nullable|email|unique:users,email',
                 'phone' => 'required|string|unique:users,phone',
                 'password' => 'required|string|min:8',
                 'company_id' => 'nullable|string',
@@ -81,18 +85,20 @@ class EmployeeController extends Controller
     public function createAdminToUser(Request $request)
     {
         try {
-            $authenticatedUserRole = auth()->user()->roles->first();
+            $authenticatedUser = auth()->user();
+            $authenticatedUserRole = $authenticatedUser->roles->first();
 
-            // Check if the authenticated user's role is either 4 or 5
-            if ($authenticatedUserRole->id !== 4 && $authenticatedUserRole->id !== 5) {
-                return $this->error_response2('Unauthorized. You do not have the required role.');
+            $allowedRoleIds = [1, 3, 4, 5];
+
+            if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+                return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
             }
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'nullable|email|unique:users,email',
                 'phone' => 'required|string|unique:users,phone',
-                'password' => 'required|string|min:8',
+                'password' => 'required|string|min:4',
                 'company_id' => 'nullable|string',
                 'company_inn' => 'nullable|string|max:20',
             ]);
@@ -139,10 +145,13 @@ class EmployeeController extends Controller
     {
         try {
 
-            $authenticatedUserRole = auth()->user()->roles->first();
+            $authenticatedUser = auth()->user();
+            $authenticatedUserRole = $authenticatedUser->roles->first();
 
-            if ($authenticatedUserRole->id !== 4 && $authenticatedUserRole->id !== 5) {
-                return $this->error_response2('Unauthorized. You do not have the required role to delete the user.');
+            $allowedRoleIds = [1, 3, 4, 5];
+
+            if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+                return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
             }
 
 

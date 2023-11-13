@@ -22,9 +22,9 @@ class AuthController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'nullable|email|unique:users,email',
                 'phone' => 'required|string|unique:users,phone',
-                'password' => 'required|string|min:8',
+                'password' => 'required|string|min:4',
             ]);
 
             if ($validator->fails()) return $this->error_response2($validator->errors()->first());

@@ -54,7 +54,7 @@ class CompanyController extends Controller
             $authenticatedUser = auth()->user();
             $authenticatedUserRole = $authenticatedUser->roles->first();
 
-            $allowedRoleIds = [3, 4, 5];
+            $allowedRoleIds = [1, 3, 4, 5];
 
             if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
                 return $this->error_response2('Unauthorized. You do not have the required role to view company users.');

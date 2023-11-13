@@ -23,7 +23,7 @@ class CompanyAdminController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'nullable|email|unique:users,email',
                 'phone' => 'required|string|unique:users,phone',
                 'password' => 'required|string|min:8',
                 'company_id' => 'nullable|integer', // Make sure it's nullable if not always required
