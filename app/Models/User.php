@@ -59,16 +59,12 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function company()
-    {
-        return $this->belongsTo(Company::class, 'company_id', 'id');
-    }
-
 
     public function roles()
     {
         return $this->belongsToMany(Role::class);
     }
+
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -77,6 +73,11 @@ class User extends Authenticatable
     public function tracks()
     {
         return $this->hasMany(Track::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function hasRole($rol_name)
