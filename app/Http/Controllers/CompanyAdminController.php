@@ -25,7 +25,7 @@ class CompanyAdminController extends Controller
                 'name' => 'required|string',
                 'email' => 'nullable|email|unique:users,email',
                 'phone' => 'required|string|unique:users,phone',
-                'password' => 'required|string|min:8',
+                'password' => 'required|string|min:4',
                 'company_id' => 'nullable|integer', // Make sure it's nullable if not always required
                 'company_inn' => 'nullable|string|max:20',
             ]);
