@@ -53,7 +53,10 @@ class EmployeeController extends Controller
         $device = substr($request->userAgent() ?? '', 0, 255);
         $user['token'] = $user->createToken($device)->plainTextToken;
 
-        $user->roles()->attach(5);
+        $role_id = 5; // Change this to the appropriate role_id
+
+        $user->roles()->attach($role_id);
+        $user['role_id'] = $role_id;
 
         $message = [
             'uz' => 'Foydalanuvchi yaratildi',
@@ -108,7 +111,9 @@ class EmployeeController extends Controller
         $device = substr($request->userAgent() ?? '', 0, 255);
         $user['token'] = $user->createToken($device)->plainTextToken;
 
-        $user->roles()->attach(6);
+        $role_id = 6;
+        $user->roles()->attach($role_id);
+        $user['role_id'] = $role_id;
 
         $message = [
             'uz' => 'Foydalanuvchi yaratildi',

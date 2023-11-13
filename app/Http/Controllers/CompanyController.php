@@ -12,40 +12,35 @@ class CompanyController extends Controller
 {
     public function createCompany(Request $request)
     {
-        try {
-            // Check if the authenticated user is a super_admin (role_id 1)
-            $authenticatedUserRole = auth()->user()->roles->first();
-            if ($authenticatedUserRole->id !== 1) {
-                return $this->error_response2('Unauthorized. You do not have the required role to create a company.');
-            }
-
-            $validator = Validator::make($request->all(), [
-                'company_name' => 'required|string',
-                'company_phone' => 'required|string|unique:users,phone',
-                'company_inn' => 'string',
-            ]);
-
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
-            $data = $request->only('company_name', 'company_inn');
-
-            $data['company_phone'] = preg_replace('/[^0-9]/', '', $request->get('company_phone'));
-
-            $company = Company::create($data);
-
-            $message = [
-                'uz' => 'Kompaniya yaratildi',
-                'ru' => 'Компания создана',
-                'en' => 'Company created',
-            ];
-
-            return $this->success_response($company, $message);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
+        // Check if the authenticated user is a super_admin (role_id 1)
+        if (auth()->user()->roles->first()->id !== 1) {
+            return $this->error_response2('Unauthorized. You do not have the required role to create a company.');
         }
+
+        $validator = Validator::make($request->all(), [
+            'company_name' => 'required|string',
+            'company_phone' => 'required|string|unique:users,phone',
+            'company_inn' => 'required|string|unique:companies,company_inn',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->all());
+        }
+
+        $data = $request->only('company_name', 'company_inn');
+        $data['company_phone'] = preg_replace('/[^0-9]/', '', $request->get('company_phone'));
+
+        $company = Company::create($data);
+
+        $message = [
+            'uz' => 'Kompaniya yaratildi',
+            'ru' => 'Компания создана',
+            'en' => 'Company created',
+        ];
+
+        return $this->success_response($company, $message);
     }
+
 
     public function viewCompanyUsers(Request $request)
     {

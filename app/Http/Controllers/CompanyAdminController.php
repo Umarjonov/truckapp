@@ -52,9 +52,10 @@ class CompanyAdminController extends Controller
 
         $device = substr($request->userAgent() ?? '', 0, 255);
         $user['token'] = $user->createToken($device)->plainTextToken;
+        $role_id = 3; // Change this to the appropriate role_id
 
-        $user->roles()->attach(3);
-
+        $user->roles()->attach($role_id);
+        $user['role_id'] = $role_id;
         $message = [
             'uz' => 'Foydalanuvchi yaratildi',
             'ru' => 'Пользователь был создан',
