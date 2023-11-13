@@ -182,31 +182,22 @@ class CompanyController extends Controller
         return $this->success_response($result, $message);
     }
 
+
     public function getCompanyAdmins(Request $request, $companyId)
     {
-        $authenticatedUser = auth()->user();
-        $authenticatedUserRole = $authenticatedUser->roles->first();
-
-        $allowedRoleIds = [1, 2, 3];
-
-        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
-            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
-        }
-
-        $company = $authenticatedUser->company()->find($companyId);
+        $company = Company::find($companyId);
 
         if (!$company) {
-            return $this->error_response2('Company not found.');
+            return $this->errorResponse('Company not found.');
         }
 
         $users = User::where('company_id', $company->id)
             ->whereHas('roles', function ($query) {
                 $query->where('role_id', 3);
             })
-            ->with(['roles' => function ($query) {
-                $query->select('id', 'name'); // Only select the necessary columns
-            }])
+//            ->with(['roles:id,name']) // Eager load only necessary columns
             ->get();
+
         $message = [
             'uz' => 'Kompaniya administratorlari muvaffaqiyatli topildi',
             'ru' => 'Администраторы компании успешно найдены',
