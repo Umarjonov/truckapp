@@ -179,19 +179,11 @@ class CompanyController extends Controller
 
     public function getCompanyAdmins(Request $request, $companyId)
     {
-        $authenticatedUser = auth()->user();
-        $authenticatedUserRole = $authenticatedUser->roles->first();
-
-        $allowedRoleIds = [1, 2];
-
-        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
-            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
-        }
 
         $company = Company::find($companyId);
 
         if (!$company) {
-            return $this->errorResponse('Company not found.');
+            return $this->error_response2('Company not found.');
         }
 
         $users = User::where('company_id', $company->id)
@@ -211,17 +203,11 @@ class CompanyController extends Controller
 
     public function getCompanyHrs(Request $request, $companyId)
     {
-        $authenticatedUser = auth()->user();
-        $authenticatedUserRole = $authenticatedUser->roles->first();
+        $company = Company::find($companyId);
 
-        $allowedRoleIds = [1, 2, 3];
-
-        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
-            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+        if (!$company) {
+            return $this->error_response2('Company not found.');
         }
-
-        $company = Company::findOrFail($companyId);
-
         $users = User::where('company_id', $company->id)
             ->whereHas('roles', function ($query) {
                 $query->whereIn('role_id', [4, 5]);
