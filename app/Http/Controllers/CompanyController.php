@@ -162,7 +162,6 @@ class CompanyController extends Controller
                 }
             }
 
-            // Add only the desired track information to the result
             $result[] = [
                 'user' => $user,
                 'first_track_type_0' => $firstTrackType0,
@@ -180,6 +179,15 @@ class CompanyController extends Controller
 
     public function getCompanyAdmins(Request $request, $companyId)
     {
+        $authenticatedUser = auth()->user();
+        $authenticatedUserRole = $authenticatedUser->roles->first();
+
+        $allowedRoleIds = [1, 2];
+
+        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+        }
+
         $company = Company::find($companyId);
 
         if (!$company) {
@@ -190,7 +198,6 @@ class CompanyController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('role_id', 3);
             })
-//            ->with(['roles:id,name']) // Eager load only necessary columns
             ->get();
 
         $message = [
@@ -201,5 +208,35 @@ class CompanyController extends Controller
 
         return $this->success_response($users, $message);
     }
+
+    public function getCompanyHrs(Request $request, $companyId)
+    {
+        $authenticatedUser = auth()->user();
+        $authenticatedUserRole = $authenticatedUser->roles->first();
+
+        $allowedRoleIds = [1, 2, 3];
+
+        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+        }
+
+        $company = Company::findOrFail($companyId);
+
+        $users = User::where('company_id', $company->id)
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('role_id', [4, 5]);
+            })
+            ->with('roles')
+            ->get();
+
+        $message = [
+            'uz' => 'Kompaniya Hr muvaffaqiyatli topildi',
+            'ru' => 'Администраторы компании успешно найдены',
+            'en' => 'Company admins are successfully found',
+        ];
+
+        return $this->success_response($users, $message);
+    }
+
 
 }

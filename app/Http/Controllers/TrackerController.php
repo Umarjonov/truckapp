@@ -97,40 +97,34 @@ class TrackerController extends Controller
 
     public function lastsubmit()
     {
-        try {
-            $tracks = Track::latest()->first();
+        $tracks = Track::latest()->firstOrFail();
 
-            $user = User::where('id', $tracks->user_id)->with('roles')->firstOrFail();
+        $user = User::with('roles')->findOrFail($tracks->user_id);
 
-            if ($user->status === 'inactive') {
-                $message = [
-                    'en' => 'Your company is inactive',
-                    'uz' => 'Sizning kompaniyangiz faol emas',
-                    'ru' => 'Ваша компания неактивна',
-                ];
-                return $this->error_response2($message);
-            }
-
-            // Create the result array with the track data and role_id
-            $result = [
-                'id' => $tracks->id,
-                'user_id' => $tracks->user_id,
-                'image' => $tracks->image,
-                'latitude' => $tracks->latitude,
-                'longitude' => $tracks->longitude,
-                'type' => $tracks->type,
-                'created_at' => $tracks->created_at,
-                'updated_at' => $tracks->updated_at,
-                'description' => $tracks->description,
-                'role_id' => $user->roles->first()->id, // Assuming a user has only one role
+        if ($user->status === 'inactive') {
+            $message = [
+                'en' => 'Your company is inactive',
+                'uz' => 'Sizning kompaniyangiz faol emas',
+                'ru' => 'Ваша компания неактивна',
             ];
-
-            return $this->success_response($result);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
+            return $this->error_response2($message);
         }
 
+        // Create the result array with the track data and role_id
+        $result = [
+            'id' => $tracks->id,
+            'user_id' => $tracks->user_id,
+            'image' => $tracks->image,
+            'latitude' => $tracks->latitude,
+            'longitude' => $tracks->longitude,
+            'type' => $tracks->type,
+            'created_at' => $tracks->created_at,
+            'updated_at' => $tracks->updated_at,
+            'description' => $tracks->description,
+            'role_id' => $user->roles->first()->id, // Assuming a user has only one role
+        ];
+
+        return $this->success_response($result);
     }
 
 
