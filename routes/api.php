@@ -36,7 +36,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'location'], function () {
     Route::post('submit', [TrackerController::class, 'register'])->middleware('auth:sanctum');
     Route::post('/user-tracks/{user_id}', [TrackerController::class, 'getUserTracksByUserId'])->middleware('auth:sanctum');
-    Route::get('last-submit', [TrackerController::class, 'lastsubmit'])->middleware('auth:sanctum');
+    Route::post('last-submit', [TrackerController::class, 'lastSubmit'])->middleware('auth:sanctum');
     Route::post('user/not-come', [NotcameController::class, 'notCame'])->middleware('auth:sanctum');
 });
 

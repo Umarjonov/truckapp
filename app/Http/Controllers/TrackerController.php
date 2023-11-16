@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -95,11 +96,15 @@ class TrackerController extends Controller
 
 //    last submit type
 
-    public function lastsubmit()
+    public function lastSubmit(): \Illuminate\Http\JsonResponse
     {
-        $tracks = Track::latest()->firstOrFail();
+        $user = Auth::user();
 
-        $user = User::with('roles')->findOrFail($tracks->user_id);
+        $lastTrack = Track::where('user_id', $user->id)->latest()->first();
+
+        if (!$lastTrack) {
+            return response()->json(['message' => 'No track data found for the user'], 404);
+        }
 
         if ($user->status === 'inactive') {
             $message = [
@@ -109,21 +114,18 @@ class TrackerController extends Controller
             ];
             return $this->error_response2($message);
         }
-
-        // Create the result array with the track data and role_id
         $result = [
-            'id' => $tracks->id,
-            'user_id' => $tracks->user_id,
-            'image' => $tracks->image,
-            'latitude' => $tracks->latitude,
-            'longitude' => $tracks->longitude,
-            'type' => $tracks->type,
-            'created_at' => $tracks->created_at,
-            'updated_at' => $tracks->updated_at,
-            'description' => $tracks->description,
-            'role_id' => $user->roles->first()->id, // Assuming a user has only one role
+            'id' => $lastTrack->id,
+            'user_id' => $lastTrack->user_id,
+            'image' => $lastTrack->image,
+            'latitude' => $lastTrack->latitude,
+            'longitude' => $lastTrack->longitude,
+            'type' => $lastTrack->type,
+            'created_at' => $lastTrack->created_at,
+            'updated_at' => $lastTrack->updated_at,
+            'description' => $lastTrack->description,
+            'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
         ];
-
         return $this->success_response($result);
     }
 
@@ -163,47 +165,6 @@ class TrackerController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
-
-//    public function getUserTracks(Request $request)
-//    {
-//        $validator = Validator::make($request->all(), [
-//            'start_date' => 'required|date',
-//            'end_date' => 'required|date',
-//        ]);
-//
-//        if ($validator->fails()) {
-//            return $this->error_response2($validator->errors()->first());
-//        }
-//
-//        $tracks = Track::selectRaw('id,user_id,image,latitude,longitude,address,description,type,created_at,updated_at,DATE(created_at) as created_date')
-//            ->whereBetween('created_at', [$request->start_date, $request->end_date])
-//            ->where('user_id', auth()->id())
-//            ->orderBy('created_at', 'desc')
-//            ->get()
-//            ->groupBy('created_date');
-//
-//        $data = [];
-//        foreach ($tracks as $track) {
-//            $first = $track->first();
-//            $last = $track->last();
-//            $data[] = [
-//                "address" => $first->address,
-//                "image" => $first->image,
-//                "in_date" => $first->created_at,
-//                "out_date" => $last->type == 1 ? $last->created_at : '',
-//                "tracks" => $track,
-//            ];
-//        }
-//        $message = [
-//            'uz' => 'Muvaffaqqiyatli',
-//            'ru' => 'Успешно',
-//            'en' => 'Successful',
-//        ];
-//
-//        return $this->success_response($data, $message);
-//
-//    }
 
 
     public function getUserTracksByUserId(Request $request, $user_id)
@@ -290,6 +251,7 @@ class TrackerController extends Controller
 
         return $this->success_response($data, $message);
     }
+
 
 }
 
