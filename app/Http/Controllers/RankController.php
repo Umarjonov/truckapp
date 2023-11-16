@@ -43,6 +43,10 @@ class RankController extends Controller
         $authenticatedUser = auth()->user();
         $company_id = $authenticatedUser->company_id;
 
+        if (!$company_id) {
+            return $this->error_response([], 'We could not identify your company');
+        }
+
         $rank = Rank::create([
             'rank' => $request->input('rank'),
             'company_id' => $company_id,
@@ -62,7 +66,10 @@ class RankController extends Controller
         $authenticatedUser = auth()->user();
         $company_id = $authenticatedUser->company_id;
 
-        // Assuming there is a relationship between Position and Company models
+        if (!$company_id) {
+            return $this->error_response([], 'We could not identify your company');
+        }
+
         $positions = Rank::whereHas('company', function ($query) use ($company_id) {
             $query->where('id', $company_id);
         })->get();

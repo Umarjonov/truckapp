@@ -50,7 +50,7 @@ class CompanyController extends Controller
             'en' => 'Company created',
         ];
 
-        return $this->success_response([$company, $adminPosition, $adminRank], $message);
+        return $this->success_response($company, $message);
     }
 
 

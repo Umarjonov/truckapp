@@ -21,6 +21,10 @@ class PositionController extends Controller
         $authenticatedUser = auth()->user();
         $company_id = $authenticatedUser->company_id;
 
+        if (!$company_id) {
+            return $this->error_response([], 'We could not identify your company.');
+        }
+
         $position = Position::create([
             'position' => $request->input('position'),
             'company_id' => $company_id,
@@ -40,7 +44,10 @@ class PositionController extends Controller
         $authenticatedUser = auth()->user();
         $company_id = $authenticatedUser->company_id;
 
-        // Assuming there is a relationship between Position and Company models
+        if (!$company_id) {
+            return $this->error_response([], 'We could not identify your company.');
+        }
+
         $positions = Position::whereHas('company', function ($query) use ($company_id) {
             $query->where('id', $company_id);
         })->get();
@@ -53,7 +60,6 @@ class PositionController extends Controller
 
         return $this->success_response($positions, $message);
     }
-
 
 
 }

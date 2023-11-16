@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('company_id')->nullable();
             $table->string('company_inn', 20)->nullable();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable();
             $table->string('phone')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
