@@ -99,11 +99,23 @@ class TrackerController extends Controller
     public function lastSubmit(): \Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
+        $result = [
+            'id' => null,
+            'user_id' => null,
+            'image' => null,
+            'latitude' => null,
+            'longitude' => null,
+            'type' => true,
+            'created_at' => null,
+            'updated_at' => null,
+            'description' => null,
+            'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
+        ];
 
         $lastTrack = Track::where('user_id', $user->id)->latest()->first();
 
         if (!$lastTrack) {
-            return response()->json(['message' => 'No track data found for the user'], 404);
+            return $this->success_response($result);
         }
 
         if ($user->status === 'inactive') {
@@ -114,6 +126,7 @@ class TrackerController extends Controller
             ];
             return $this->error_response2($message);
         }
+
         $result = [
             'id' => $lastTrack->id,
             'user_id' => $lastTrack->user_id,
@@ -126,6 +139,7 @@ class TrackerController extends Controller
             'description' => $lastTrack->description,
             'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
         ];
+
         return $this->success_response($result);
     }
 

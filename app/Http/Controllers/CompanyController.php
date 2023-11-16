@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Position;
+use App\Models\Rank;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
@@ -32,13 +34,23 @@ class CompanyController extends Controller
 
         $company = Company::create($data);
 
+        $adminPosition = Position::create([
+            'position' => 'Admin',
+            'company_id' => $company->id,
+        ]);
+
+        $adminRank = Rank::create([
+            'rank' => 'Admin',
+            'company_id' => $company->id,
+        ]);
+
         $message = [
             'uz' => 'Kompaniya yaratildi',
             'ru' => 'Компания создана',
             'en' => 'Company created',
         ];
 
-        return $this->success_response($company, $message);
+        return $this->success_response([$company, $adminPosition, $adminRank], $message);
     }
 
 

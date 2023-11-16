@@ -9,6 +9,27 @@ use Illuminate\Support\Facades\Validator;
 
 class RankController extends Controller
 {
+//    public function createRank(Request $request)
+//    {
+//        $validator = Validator::make($request->all(), [
+//            'rank' => 'required|string',
+//        ]);
+//
+//        if ($validator->fails()) {
+//            return $this->error_response([], $validator->errors()->first());
+//        }
+//
+//        $position = Rank::create([
+//            'rank' => $request->input('rank'),
+//        ]);
+//
+//        $message = [
+//            'uz' => 'Rank created successfully',
+//            'ru' => 'Rank created successfully',
+//            'en' => 'Rank created successfully',
+//        ];
+//        return $this->success_response($position, $message);
+//    }
     public function createRank(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -19,8 +40,12 @@ class RankController extends Controller
             return $this->error_response([], $validator->errors()->first());
         }
 
-        $position = Rank::create([
+        $authenticatedUser = auth()->user();
+        $company_id = $authenticatedUser->company_id;
+
+        $rank = Rank::create([
             'rank' => $request->input('rank'),
+            'company_id' => $company_id,
         ]);
 
         $message = [
@@ -28,17 +53,24 @@ class RankController extends Controller
             'ru' => 'Rank created successfully',
             'en' => 'Rank created successfully',
         ];
-        return $this->success_response($position, $message);
+
+        return $this->success_response($rank, $message);
     }
 
     public function getAllRanks()
     {
-        $positions = Rank::all();
+        $authenticatedUser = auth()->user();
+        $company_id = $authenticatedUser->company_id;
+
+        // Assuming there is a relationship between Position and Company models
+        $positions = Rank::whereHas('company', function ($query) use ($company_id) {
+            $query->where('id', $company_id);
+        })->get();
 
         $message = [
-            'uz' => 'All ranks retrieved successfully',
-            'ru' => 'All ranks retrieved successfully',
-            'en' => 'All ranks retrieved successfully',
+            'uz' => 'All positions retrieved successfully',
+            'ru' => 'All positions retrieved successfully',
+            'en' => 'All positions retrieved successfully',
         ];
 
         return $this->success_response($positions, $message);

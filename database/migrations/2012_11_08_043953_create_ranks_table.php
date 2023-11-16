@@ -10,7 +10,11 @@ return new class extends Migration {
         Schema::create('ranks', function (Blueprint $table) {
             $table->id();
             $table->text('rank')->nullable();
+            $table->unsignedBigInteger('company_id'); // Add this line
             $table->timestamps();
+
+            // Add foreign key constraint
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

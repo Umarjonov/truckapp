@@ -10,7 +10,6 @@ class PositionController extends Controller
 {
     public function createPosition(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'position' => 'required|string',
         ]);
@@ -19,8 +18,12 @@ class PositionController extends Controller
             return $this->error_response([], $validator->errors()->first());
         }
 
+        $authenticatedUser = auth()->user();
+        $company_id = $authenticatedUser->company_id;
+
         $position = Position::create([
             'position' => $request->input('position'),
+            'company_id' => $company_id,
         ]);
 
         $message = [
@@ -28,12 +31,19 @@ class PositionController extends Controller
             'ru' => 'Position created successfully',
             'en' => 'Position created successfully',
         ];
+
         return $this->success_response($position, $message);
     }
 
     public function getAllPositions()
     {
-        $positions = Position::all();
+        $authenticatedUser = auth()->user();
+        $company_id = $authenticatedUser->company_id;
+
+        // Assuming there is a relationship between Position and Company models
+        $positions = Position::whereHas('company', function ($query) use ($company_id) {
+            $query->where('id', $company_id);
+        })->get();
 
         $message = [
             'uz' => 'All positions retrieved successfully',
@@ -43,6 +53,7 @@ class PositionController extends Controller
 
         return $this->success_response($positions, $message);
     }
+
 
 
 }
