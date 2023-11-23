@@ -146,38 +146,36 @@ class TrackerController extends Controller
 
     public function updateTruckData(Request $request, $truck_id)
     {
-        try {
-            // Check if the authenticated user has the required role (role_id equal to 2)
-            if (auth()->user()->roles->first()->id !== 4) {
-                return $this->error_response2('Unauthorized. You do not have the required role.');
-            }
-            $validator = Validator::make($request->all(), [
-                'created_at' => 'required|date',
-            ]);
-
-            if ($validator->fails()) {
-                return $this->error_response2($validator->errors()->first());
-            }
-            $truck = Track::find($truck_id);
-
-            if (!$truck) {
-                return $this->error_response2('Truck not found');
-            }
-
-            $data = $request->only('created_at');
-
-            $truck->update($data);
-
-            $message = ([
-                'en' => 'Truck data has been updated.',
-                'uz' => "Keldi-ketti ma'lumotlari yangilandi.",
-                'ru' => 'Данные грузовика обновлены.',
-            ]);
-
-            return $this->success_response($truck, $message);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        if (auth()->user()->roles->first()->id !== 4) {
+            return $this->error_response2('Unauthorized. You do not have the required role.');
         }
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|string',
+            'longitude' => 'required|string',
+            'address' => 'required|string',
+            'created_at' => 'required|date',
+        ]);
+        if ($validator->fails()) {
+            return $this->error_response2($validator->errors()->first());
+        }
+        $truck = Track::find($truck_id);
+
+        if (!$truck) {
+            return $this->error_response2('Truck not found');
+        }
+
+        $data = $request->only('latitude', 'longitude', 'address', 'created_at');
+
+        $truck->update($data);
+
+        $message = ([
+            'en' => 'Truck data has been updated.',
+            'uz' => "Keldi-ketti ma'lumotlari yangilandi.",
+            'ru' => 'Данные грузовика обновлены.',
+        ]);
+
+        return $this->success_response($truck, $message);
+
     }
 
 
