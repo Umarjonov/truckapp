@@ -213,13 +213,41 @@ class CompanyController extends Controller
         return $this->success_response($users, $message);
     }
 
-    public function getCompanyHrs(Request $request, $companyId)
+//    public function getCompanyHrs(Request $request, $companyId)
+//    {
+//        $company = Company::find($companyId);
+//
+//        if (!$company) {
+//            return $this->error_response2('Company not found.');
+//        }
+//        $users = User::where('company_id', $company->id)
+//            ->whereHas('roles', function ($query) {
+//                $query->whereIn('role_id', [4, 5]);
+//            })
+//            ->with('roles')
+//            ->get();
+//
+//        $message = [
+//            'uz' => 'Kompaniya Hr muvaffaqiyatli topildi',
+//            'ru' => 'Администраторы компании успешно найдены',
+//            'en' => 'Company admins are successfully found',
+//        ];
+//
+//        return $this->success_response($users, $message);
+//    }
+
+// ============= test ===============
+
+
+    public function getCompanyHrs(Request $request)
     {
-        $company = Company::find($companyId);
+        // Assuming the authenticated user is associated with a company
+        $company = $request->user()->company;
 
         if (!$company) {
             return $this->error_response2('Company not found.');
         }
+
         $users = User::where('company_id', $company->id)
             ->whereHas('roles', function ($query) {
                 $query->whereIn('role_id', [4, 5]);
@@ -235,6 +263,5 @@ class CompanyController extends Controller
 
         return $this->success_response($users, $message);
     }
-
 
 }

@@ -63,7 +63,7 @@ Route::group(['prefix' => 'company'], function () {
     Route::post('companies/{companyId}/status-change', [CompanyController::class, 'changeCompanyStatus'])->middleware('auth:sanctum');
     Route::post('companies/company_list', [CompanyController::class, 'companyList'])->middleware('auth:sanctum');
     Route::post('companies/admins/{companyId}', [CompanyController::class, 'getCompanyAdmins'])->middleware('auth:sanctum');
-    Route::post('companies/hr/{companyId}', [CompanyController::class, 'getCompanyHrs'])->middleware('auth:sanctum');
+    Route::post('companies/hr/list', [CompanyController::class, 'getCompanyHrs'])->middleware('auth:sanctum');
 });
 Route::group(['prefix' => 'company-admin'], function () {
     Route::post('admin-add/manager', [EmployeeController::class, 'adminAddHrOrManager'])->middleware('auth:sanctum');
