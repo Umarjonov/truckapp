@@ -68,8 +68,8 @@ Route::group(['prefix' => 'company'], function () {
 Route::group(['prefix' => 'company-admin'], function () {
     Route::post('admin-add/manager', [EmployeeController::class, 'adminAddHrOrManager'])->middleware('auth:sanctum');
     Route::post('manager-add/user', [EmployeeController::class, 'createAdminToUser'])->middleware('auth:sanctum');
-    Route::post('users-delete/{userId}', [EmployeeController::class, 'deleteUser'])->middleware('auth:sanctum');
     Route::post('hrs-delete/{userId}', [EmployeeController::class, 'deleteHr'])->middleware('auth:sanctum');
+    Route::post('admins-delete/{userId}', [EmployeeController::class, 'deleteAll'])->middleware('auth:sanctum');
     Route::post('users/{id}/position', [UserListController::class, 'makePosition'])->middleware('auth:sanctum');
 });
 Route::group(['prefix' => 'position'], function () {

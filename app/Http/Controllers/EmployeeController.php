@@ -157,43 +157,75 @@ class EmployeeController extends Controller
         return $this->success_response($user, $message, 201);
     }
 
-    public function deleteUser(Request $request, $userId)
+    public function deleteHr(Request $request, $userId)
     {
-
-
         $authenticatedUser = auth()->user();
         $authenticatedUserRole = $authenticatedUser->roles->first();
 
-        $allowedRoleIds = [1, 3, 4, 5];
+        $allowedRoleIds = [1, 2, 3, 4, 5];
 
         if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
             return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
         }
-
 
         $user = User::find($userId);
 
         if (!$user) {
             return $this->error_response2('User not found');
         }
+
         $userRoleId = $user->roles->first()->id;
 
-        if ($userRoleId === 6) {
+        $allowedRoleIds = [4, 5, 6];
+
+        if (in_array($userRoleId, $allowedRoleIds)) {
             $user->delete();
-        } else {
-            return $this->error_response2('You cannot delete this user');
+
+            $message = [
+                'uz' => 'Foydalanuvchi o\'chirildi',
+                'ru' => 'Пользователь был удален',
+                'en' => 'The user has been deleted',
+            ];
+
+            return $this->success_response($message, 200);
         }
 
-        $message = [
-            'uz' => 'Foydalanuvchi o\'chirildi',
-            'ru' => 'Пользователь был удален',
-            'en' => 'The user has been deleted',
-        ];
-
-        return $this->success_response($message, 200);
+        return $this->error_response2('You cannot delete this user');
     }
+    public function deleteAll(Request $request, $userId)
+    {
+        $authenticatedUser = auth()->user();
+        $authenticatedUserRole = $authenticatedUser->roles->first();
 
-//    ============= TEST ====================
+        $allowedRoleIds = [1, 2, 3, 4, 5];
 
+        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return $this->error_response2('User not found');
+        }
+
+        $userRoleId = $user->roles->first()->id;
+
+        $allowedRoleIds = [3, 4, 5, 6];
+
+        if (in_array($userRoleId, $allowedRoleIds)) {
+            $user->delete();
+
+            $message = [
+                'uz' => 'Foydalanuvchi o\'chirildi',
+                'ru' => 'Пользователь был удален',
+                'en' => 'The user has been deleted',
+            ];
+
+            return $this->success_response($message, 200);
+        }
+
+        return $this->error_response2('You cannot delete this user');
+    }
 
 }
