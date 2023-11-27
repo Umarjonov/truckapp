@@ -18,7 +18,7 @@ class EmployeeController extends Controller
         $authenticatedUser = auth()->user();
         $authenticatedUserRole = $authenticatedUser->roles->first();
 
-        $allowedRoleIds = [1, 2, 3];
+        $allowedRoleIds = [1, 3, 4, 5];
 
         if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
             return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
@@ -219,6 +219,7 @@ class EmployeeController extends Controller
 
         return $this->error_response2('You cannot delete this user');
     }
+
     public function deleteAll(Request $request, $userId)
     {
         $authenticatedUser = auth()->user();
