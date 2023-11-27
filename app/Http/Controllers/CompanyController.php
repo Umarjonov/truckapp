@@ -45,7 +45,7 @@ class CompanyController extends Controller
     }
 
 
-  public function viewCompanyUsers(Request $request)
+    public function viewCompanyUsers(Request $request)
     {
         // Check if the authenticated user has one of the allowed role IDs (3, 4, or 5)
         $authenticatedUser = auth()->user();
@@ -85,6 +85,7 @@ class CompanyController extends Controller
 
         return $this->success_response($usersWithLastTrack);
     }
+
     public function changeCompanyStatus(Request $request, $companyId)
     {
         try {
@@ -147,47 +148,47 @@ class CompanyController extends Controller
         }
     }
 
-    public function getUserInfoAndTruckInfo(Request $request)
-    {
-        $date = $request->input('date', date('Y-m-d'));
-        $companyId = auth()->user()->company_id;
-
-        $users = User::with(['tracks' => function ($query) use ($date) {
-            $query->whereBetween("created_at", [$date, $date . " 23:59:59"])
-                ->orderBy('created_at', 'asc'); // Order the tracks by creation date in ascending order
-        }])
-            ->where('company_id', $companyId)
-            ->get();
-
-        $result = [];
-
-        foreach ($users as $user) {
-            $firstTrackType0 = null;
-            $lastTrackType1 = null;
-
-            foreach ($user->tracks as $track) {
-                if ($track->type === 0 && $firstTrackType0 === null) {
-                    $firstTrackType0 = $track;
-                }
-                if ($track->type === 1) {
-                    $lastTrackType1 = $track;
-                }
-            }
-
-            $result[] = [
-                'user' => $user,
-                'first_track_type_0' => $firstTrackType0,
-                'last_track_type_1' => $lastTrackType1,
-            ];
-        }
-        $message = [
-            'uz' => 'Muvaffaqqiyatli',
-            'ru' => 'Успешно',
-            'en' => 'Successful',
-        ];
-        return $this->success_response($result, $message);
-    }
-
+//    public function getUserInfoAndTruckInfo(Request $request)
+//    {
+//        $date = $request->input('date', date('Y-m-d'));
+//        $companyId = auth()->user()->company_id;
+//
+//        $users = User::with(['tracks' => function ($query) use ($date) {
+//            $query->whereBetween("created_at", [$date, $date . " 23:59:59"])
+//                ->orderBy('created_at', 'asc'); // Order the tracks by creation date in ascending order
+//        }])
+//            ->where('company_id', $companyId)
+//            ->get();
+//
+//        $result = [];
+//
+//        foreach ($users as $user) {
+//            $firstTrackType0 = null;
+//            $lastTrackType1 = null;
+//
+//            foreach ($user->tracks as $track) {
+//                if ($track->type === 0 && $firstTrackType0 === null) {
+//                    $firstTrackType0 = $track;
+//                }
+//                if ($track->type === 1) {
+//                    $lastTrackType1 = $track;
+//                }
+//            }
+//
+//            $result[] = [
+//                'user' => $user,
+//                'first_track_type_0' => $firstTrackType0,
+//                'last_track_type_1' => $lastTrackType1,
+//            ];
+//        }
+//        $message = [
+//            'uz' => 'Muvaffaqqiyatli',
+//            'ru' => 'Успешно',
+//            'en' => 'Successful',
+//        ];
+//        return $this->success_response($result, $message);
+//    }
+//
 
     public function getCompanyAdmins(Request $request, $companyId)
     {
@@ -266,6 +267,47 @@ class CompanyController extends Controller
     }
 
 // ====================  test ====================
+
+    public function getUserInfoAndTruckInfo(Request $request)
+    {
+        $date = $request->input('date', now()->toDateString());
+        $companyId = auth()->user()->company_id;
+
+        $users = User::with(['tracks' => function ($query) use ($date) {
+            $query->whereBetween("created_at", [$date, $date . " 23:59:59"])
+                ->orderBy('created_at', 'asc');
+        }])
+            ->where('company_id', $companyId)
+            ->get();
+
+        $result = [];
+
+        foreach ($users as $user) {
+            $firstTrackType0 = $user->tracks->firstWhere('type', 0);
+            $lastTrackType1 = $user->tracks->filter(function ($track) {
+                return $track->type === 1;
+            })->last();
+
+            $lastTrackImageUrl = optional($firstTrackType0)->image;
+            $lastTrackImageUrl = $lastTrackImageUrl ? url($lastTrackImageUrl) : null;
+
+            $result[] = [
+                'user' => $user->toArray(),
+                'first_track_type_0' => $firstTrackType0,
+                'last_track_type_1' => $lastTrackType1,
+                'last_track_image' => $lastTrackImageUrl,
+            ];
+        }
+
+        $message = [
+            'uz' => 'Muvaffaqqiyatli',
+            'ru' => 'Успешно',
+            'en' => 'Successful',
+        ];
+
+        return $this->success_response($result, $message);
+    }
+
 
 
 }
