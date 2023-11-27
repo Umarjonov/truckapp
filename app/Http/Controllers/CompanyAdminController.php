@@ -50,9 +50,6 @@ class CompanyAdminController extends Controller
         $user = User::create($data);
         $this->createTeam($user);
 
-        // Set rank_id and position_id to 1
-        $user->rank_id = 1;
-        $user->position_id = 1;
         $user->save();
 
         $device = substr($request->userAgent() ?? '', 0, 255);
@@ -79,5 +76,7 @@ class CompanyAdminController extends Controller
             'personal_team' => true,
         ]));
     }
+
+//    ====================== test =====================
 
 }
