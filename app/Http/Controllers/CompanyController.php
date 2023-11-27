@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Position;
 use App\Models\Rank;
+use App\Models\Track;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
@@ -191,18 +192,31 @@ class CompanyController extends Controller
 
     public function getCompanyAdmins(Request $request, $companyId)
     {
-
         $company = Company::find($companyId);
 
         if (!$company) {
             return $this->error_response2('Company not found.');
         }
 
-        $users = User::where('company_id', $company->id)
+        $admins = User::where('company_id', $company->id)
             ->whereHas('roles', function ($query) {
                 $query->where('role_id', 3);
             })
             ->get();
+
+        $adminsWithLastTrack = [];
+
+        foreach ($admins as $admin) {
+            $lastTrack = Track::where('user_id', $admin->id)->latest()->first();
+
+            if ($lastTrack) {
+                $admin->last_track_image = asset($lastTrack->image);
+            } else {
+                $admin->last_track_image = null;
+            }
+
+            $adminsWithLastTrack[] = $admin;
+        }
 
         $message = [
             'uz' => 'Kompaniya administratorlari muvaffaqiyatli topildi',
@@ -210,58 +224,47 @@ class CompanyController extends Controller
             'en' => 'Company admins are successfully found',
         ];
 
-        return $this->success_response($users, $message);
+        return $this->success_response($adminsWithLastTrack, $message);
     }
-
-//    public function getCompanyHrs(Request $request, $companyId)
-//    {
-//        $company = Company::find($companyId);
-//
-//        if (!$company) {
-//            return $this->error_response2('Company not found.');
-//        }
-//        $users = User::where('company_id', $company->id)
-//            ->whereHas('roles', function ($query) {
-//                $query->whereIn('role_id', [4, 5]);
-//            })
-//            ->with('roles')
-//            ->get();
-//
-//        $message = [
-//            'uz' => 'Kompaniya Hr muvaffaqiyatli topildi',
-//            'ru' => 'Администраторы компании успешно найдены',
-//            'en' => 'Company admins are successfully found',
-//        ];
-//
-//        return $this->success_response($users, $message);
-//    }
-
-// ============= test ===============
 
 
     public function getCompanyHrs(Request $request)
     {
-        // Assuming the authenticated user is associated with a company
         $company = $request->user()->company;
 
         if (!$company) {
             return $this->error_response2('Company not found.');
         }
 
-        $users = User::where('company_id', $company->id)
+        $hrs = User::where('company_id', $company->id)
             ->whereHas('roles', function ($query) {
                 $query->whereIn('role_id', [4, 5]);
             })
             ->with('roles')
             ->get();
 
+        $hrsWithLastTrack = [];
+
+        foreach ($hrs as $hr) {
+            $lastTrack = Track::where('user_id', $hr->id)->latest()->first();
+
+            if ($lastTrack) {
+                $hr->last_track_image = asset($lastTrack->image);
+            } else {
+                $hr->last_track_image = null;
+            }
+
+            $hrsWithLastTrack[] = $hr;
+        }
+
         $message = [
-            'uz' => 'Kompaniya Hr muvaffaqiyatli topildi',
-            'ru' => 'Администраторы компании успешно найдены',
-            'en' => 'Company admins are successfully found',
+            'uz' => 'Kompaniya HRlar muvaffaqiyatli topildi',
+            'ru' => 'HR компании успешно найдены',
+            'en' => 'Company HRs are successfully found',
         ];
 
-        return $this->success_response($users, $message);
+        return $this->success_response($hrsWithLastTrack, $message);
     }
+
 
 }
