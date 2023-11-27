@@ -55,36 +55,32 @@ class CompanyController extends Controller
     }
 
 
-    public function viewCompanyUsers(Request $request)
-    {
-        try {
-            // Check if the authenticated user has one of the allowed role IDs (3, 4, or 5)
-            $authenticatedUser = auth()->user();
-            $authenticatedUserRole = $authenticatedUser->roles->first();
-
-            $allowedRoleIds = [1, 3, 4, 5];
-
-            if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
-                return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
-            }
-
-            // Retrieve the company information from the user's token
-            $company = $authenticatedUser->company;
-
-            if (!$company) {
-                return $this->error_response2('Company not found');
-            }
-
-            // Get the list of users belonging to the company
-            $users = User::where('company_id', $company->id)->get();
-
-            return $this->success_response($users);
-        } catch (\Exception $e) {
-            // Handle any exceptions that may occur during the API request
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-
-    }
+//    public function viewCompanyUsers(Request $request)
+//    {
+//
+//        // Check if the authenticated user has one of the allowed role IDs (3, 4, or 5)
+//        $authenticatedUser = auth()->user();
+//        $authenticatedUserRole = $authenticatedUser->roles->first();
+//
+//        $allowedRoleIds = [1, 3, 4, 5];
+//
+//        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+//            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+//        }
+//
+//        // Retrieve the company information from the user's token
+//        $company = $authenticatedUser->company;
+//
+//        if (!$company) {
+//            return $this->error_response2('Company not found');
+//        }
+//
+//        // Get the list of users belonging to the company
+//        $users = User::where('company_id', $company->id)->get();
+//
+//        return $this->success_response($users);
+//
+//    }
 
     public function changeCompanyStatus(Request $request, $companyId)
     {
@@ -264,6 +260,48 @@ class CompanyController extends Controller
         ];
 
         return $this->success_response($hrsWithLastTrack, $message);
+    }
+
+// ====================  test ====================
+    public function viewCompanyUsers(Request $request)
+    {
+        // Check if the authenticated user has one of the allowed role IDs (3, 4, or 5)
+        $authenticatedUser = auth()->user();
+        $authenticatedUserRole = $authenticatedUser->roles->first();
+
+        $allowedRoleIds = [1, 3, 4, 5];
+
+        if (!in_array($authenticatedUserRole->id, $allowedRoleIds)) {
+            return $this->error_response2('Unauthorized. You do not have the required role to view company users.');
+        }
+
+        // Retrieve the company information from the user's token
+        $company = $authenticatedUser->company;
+
+        if (!$company) {
+            return $this->error_response2('Company not found');
+        }
+
+        // Get the list of users belonging to the company
+        $users = User::where('company_id', $company->id)->get();
+
+        $usersWithLastTrack = [];
+
+        foreach ($users as $user) {
+            $lastTrack = Track::where('user_id', $user->id)->latest()->first();
+
+            if ($lastTrack) {
+                // Add image information to the user data
+                $user->last_track_image = asset($lastTrack->image);
+            } else {
+                // Set a default image URL or null if no track is found
+                $user->last_track_image = null;
+            }
+
+            $usersWithLastTrack[] = $user;
+        }
+
+        return $this->success_response($usersWithLastTrack);
     }
 
 
