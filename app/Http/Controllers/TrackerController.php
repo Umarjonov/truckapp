@@ -41,6 +41,11 @@ class TrackerController extends Controller
 
             $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
             $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
+            if ($request->has('yesterday') && $request->yesterday == true) {
+                $data['created_at'] = Carbon::yesterday()->setTime(18, 0, 0);
+                $data['type'] = 1;
+            }
+
 
             $base64Image = $request->input('image');
             list($imageType, $imageData) = explode(";base64,", $base64Image);
