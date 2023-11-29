@@ -203,7 +203,7 @@ class EmployeeController extends Controller
 
         $userRoleId = $user->roles->first()->id;
 
-        $allowedRoleIds = [4, 5];
+        $allowedRoleIds = [4, 5, 6];
 
         if (in_array($userRoleId, $allowedRoleIds)) {
             $user->delete();
