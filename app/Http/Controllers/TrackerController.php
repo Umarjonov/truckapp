@@ -41,10 +41,6 @@ class TrackerController extends Controller
 
             $truck_old = Track::where('user_id', $data['user_id'])->latest()->first();
             $data['type'] = is_null($truck_old) ? 0 : !$truck_old->type;
-            if ($request->has('yesterday') && $request->yesterday == true) {
-                $data['created_at'] = Carbon::yesterday()->setTime(18, 0, 0);
-                $data['type'] = 1;
-            }
 
 
             $base64Image = $request->input('image');
@@ -101,53 +97,43 @@ class TrackerController extends Controller
 
 //    last submit type
 
-    public function lastSubmit(): \Illuminate\Http\JsonResponse
+    public function lastSubmit()
     {
         $user = Auth::user();
-        $result = [
-            'id' => null,
-            'user_id' => null,
-            'image' => null,
-            'latitude' => null,
-            'longitude' => null,
-            'type' => true,
-            'created_at' => null,
-            'updated_at' => null,
-            'description' => null,
-            'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
-        ];
-
         $lastTrack = Track::where('user_id', $user->id)->latest()->first();
-
-        if (!$lastTrack) {
-            return $this->success_response($result);
+        if (is_null($lastTrack)) {
+            return $this->success_response([
+                'id' => null,
+                'user_id' => $user->id,
+                'image' => null,
+                'latitude' => null,
+                'longitude' => null,
+                'type' => true,
+                'created_at' => null,
+                'updated_at' => null,
+                'description' => null,
+                'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
+            ]);
         }
-
-        if ($user->status === 'inactive') {
-            $message = [
-                'en' => 'Your company is inactive',
-                'uz' => 'Sizning kompaniyangiz faol emas',
-                'ru' => 'Ваша компания неактивна',
+        if ( $lastTrack->type == 0 && $lastTrack->created_at->format('Y-m-d') < Carbon::today()->format('Y-m-d') ){
+            $track = [
+                "user_id" => $user->id,
+                "image" => $lastTrack->image,
+                "latitude" => $lastTrack->latitude,
+                "longitude" => $lastTrack->longitude,
+                "address" => $lastTrack->address,
+                "type" => 1,
+                "description" => "я",
+                "created_at"    =>  $lastTrack->created_at->setTime(13, 0, 0),
+                "updated_at"    =>  $lastTrack->created_at->setTime(13, 0, 0),
             ];
-            return $this->error_response2($message);
+            Track::insert($track);
+            $track->role_id = $user->roles->isNotEmpty() ? $user->roles->first()->id : null;
+            return $this->success_response($track);
         }
-
-        $result = [
-            'id' => $lastTrack->id,
-            'user_id' => $lastTrack->user_id,
-            'image' => $lastTrack->image,
-            'latitude' => $lastTrack->latitude,
-            'longitude' => $lastTrack->longitude,
-            'type' => $lastTrack->type,
-            'created_at' => $lastTrack->created_at,
-            'updated_at' => $lastTrack->updated_at,
-            'description' => $lastTrack->description,
-            'role_id' => $user->roles->isNotEmpty() ? $user->roles->first()->id : null,
-        ];
-
-        return $this->success_response($result);
+        $lastTrack['role_id'] = $user->roles->isNotEmpty() ? $user->roles->first()->id : null;
+        return $this->success_response($lastTrack);
     }
-
 
     public function updateTruckData(Request $request, $truck_id)
     {
