@@ -284,9 +284,11 @@ class CompanyController extends Controller
 
         foreach ($users as $user) {
             $firstTrackType0 = $user->tracks->firstWhere('type', 0);
-            $lastTrackType1 = $user->tracks->filter(function ($track) {
-                return $track->type === 1;
-            })->last();
+//            $lastTrackType1 = $user->tracks->filter(function ($track) {
+//                return $track->type === 1;
+//            })->last();
+            $lastTrackType1 = $user->tracks->last();
+            $lastTrackType1 = $lastTrackType1 && $lastTrackType1->type === 1 ? $lastTrackType1 : null;
 
             $lastTrackImageUrl = optional($firstTrackType0)->image;
             $lastTrackImageUrl = $lastTrackImageUrl ? url($lastTrackImageUrl) : null;

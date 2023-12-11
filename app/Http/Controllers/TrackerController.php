@@ -127,7 +127,7 @@ class TrackerController extends Controller
                 "created_at"    =>  $lastTrack->created_at->setTime(13, 0, 0),
                 "updated_at"    =>  $lastTrack->created_at->setTime(13, 0, 0),
             ];
-            Track::insert($track);
+            Track::create($track);
             $track->role_id = $user->roles->isNotEmpty() ? $user->roles->first()->id : null;
             return $this->success_response($track);
         }
