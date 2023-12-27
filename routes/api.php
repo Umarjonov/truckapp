@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'create']);
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('delete', [AuthController::class, 'delete'])->middleware('auth:sanctum');
 });
 
 Route::group(['prefix' => 'location'], function () {

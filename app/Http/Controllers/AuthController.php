@@ -57,6 +57,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+            $user = User::where(['phone'=> $request->phone,'status'=>'active'])->first();
+            if (!$user) return $this->error_response2("User not found");
             $credentials = $request->only('phone', 'password');
             if (!Auth::attempt($credentials)) {
                 return $this->error_response([], "Noto'g'ri kirish ma'lumotlari", "Неверные данные для входа", "Invalid login details");
@@ -90,16 +92,18 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'phone' => "required|exists:users,phone"
-            ]);
-            if ($validator->fails()) {
-                return $this->error_response2([
-                    "uz" => $validator->errors()->first(),
-                    "ru" => $validator->errors()->first(),
-                    "en" => $validator->errors()->first(),
-                ]);
-            }
+            $user = User::where(['phone'=> $request->phone,'status'=>'active'])->first();
+            if (!$user) return $this->error_response2("User not found");
+//            $validator = Validator::make($request->all(), [
+//                'phone' => "required|exists:users,phone"
+//            ]);
+//            if ($validator->fails()) {
+//                return $this->error_response2([
+//                    "uz" => $validator->errors()->first(),
+//                    "ru" => $validator->errors()->first(),
+//                    "en" => $validator->errors()->first(),
+//                ]);
+//            }
             $code = random_int(1000, 9999);
             $verification = UserVerification::updateOrCreate(
                 ['phone' => $request->phone],
@@ -236,4 +240,15 @@ class AuthController extends Controller
         ]));
     }
 
+    public function delete()
+    {
+        $user = auth()->user();
+        $user->update(['status' => 'inactive']);
+        $message = [
+            "uz" => "Foydalanuvchi o'chirildi",
+            "ru" => "Пользователь удален",
+            "en" => "The user has been deleted",
+        ];
+        return $this->success_response([], $message);
+    }
 }
